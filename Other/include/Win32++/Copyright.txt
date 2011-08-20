@@ -1,12 +1,12 @@
-Win32++  Version 6.2
-Released: 14th July, 2008 by:
+Win32++   Version 7.2
+Released: 5th AUgust 2011
 
      David Nash
      email: dnash@bigpond.net.au
-     url: http://users.bigpond.net.au/programming/
+     url: https://sourceforge.net/projects/win32-framework
 
 
-Copyright (c) 2005-2008  David Nash
+Copyright (c) 2005-2011  David Nash
 
 Permission is hereby granted, free of charge, to
 any person obtaining a copy of this software and
