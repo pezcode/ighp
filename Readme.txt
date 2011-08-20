@@ -73,6 +73,7 @@ where
    following values: a-z, A-Z, 0-9, F1-F24 Spacebar, Backspace, Tab, Escape,
    PageUp, PageDown, End, Home, Left, Up, Right, Down, Insert, Delete,
    PrintScreen, Pause, NumLock, -, =, /, . and ,
+   Multimedia keys: MMPlayPause, MMStop, MMPrev, MMNext, MMVolUp, MMVolDown, MMVolMute
  - alt, control, shift and win can take one of the values true or false. If the
    value is true, then you must use this key modifier with the hotkey to enable
    the action. If the value is set to false, it can be omitted.

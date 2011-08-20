@@ -107,6 +107,15 @@ void InitHotkeysMap()
 	hotkeysMap["/"] = VK_DIVIDE;
 	hotkeysMap[","] = VK_OEM_COMMA;
 	hotkeysMap["."] = VK_OEM_PERIOD;
+
+	hotkeysMap["MMLaunch"] = VK_LAUNCH_MEDIA_SELECT;
+	hotkeysMap["MMPlayPause"] = VK_MEDIA_PLAY_PAUSE;
+	hotkeysMap["MMStop"] = VK_MEDIA_STOP;
+	hotkeysMap["MMPrev"] = VK_MEDIA_PREV_TRACK;
+	hotkeysMap["MMNext"] = VK_MEDIA_NEXT_TRACK;
+	hotkeysMap["MMVolUp"] = VK_VOLUME_UP;
+	hotkeysMap["MMVolDown"] = VK_VOLUME_DOWN;
+	hotkeysMap["MMVolMute"] = VK_VOLUME_MUTE;
 }
 
 Hotkey::Hotkey(const std::string action_name, const std::string key_name, const std::string alt_str,
