@@ -27,42 +27,10 @@
 #include <windows.h>
 
 #include <Win32++\dialog.h>
+#include <Win32++\stdcontrols.h>
+#include <Win32++\controls.h>
+#include <Win32++\listview.h>
 #include "resource.h"
-
-class ActionsComboBox : public CWnd
-{
-public:
-	explicit ActionsComboBox() { };
-	virtual ~ActionsComboBox() { };
-
-private:
-	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-	void OnSelectedActionChanged();
-};
-
-class HotkeysListView : public CWnd
-{
-public:
-	explicit HotkeysListView() { };
-	virtual ~HotkeysListView() { };
-
-private:
-	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-	void OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange);
-};
-
-class HotkeyTextEdit : public CWnd
-{
-public:
-	explicit HotkeyTextEdit() { };
-	virtual ~HotkeyTextEdit() { };
-
-private:
-	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-};
 
 class GlobalHotkeysDialog : public CDialog
 {
@@ -73,12 +41,18 @@ public:
 protected:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
 	virtual void OnOK();
 
 private:
-	ActionsComboBox m_actionsComboBox;
-	HotkeysListView m_hotkeysListView;
-	HotkeyTextEdit m_hotkeyTextEdit;
+	CComboBox m_actionsComboBox;
+	CListView m_hotkeysListView;
+	CEdit m_hotkeyTextEdit;
+	int m_listviewIndex;
+
+	void OnAdd();
+	void OnClear();
+	void OnModify();
 
 	void OnApply();
 
@@ -87,6 +61,9 @@ private:
 	void PopulateActionsComboBox();
 
 	void AddHotkeyListItem(const std::string action, const std::string hotkey);
+
+	void OnSelectedActionChanged();
+	void OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange);
 
 };
 

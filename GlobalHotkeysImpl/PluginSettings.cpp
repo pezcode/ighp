@@ -214,7 +214,7 @@ bool PluginSettings::GetConfigFileDir(std::string* str)
 	GetVersionEx(&osvi);
 
 	char path[MAX_PATH];
-	ZeroMemory(path, sizeof(char) * MAX_PATH);
+	ZeroMemory(path, sizeof(path));
 
 	if (osvi.dwMajorVersion > 5) {
 		// Vista and above

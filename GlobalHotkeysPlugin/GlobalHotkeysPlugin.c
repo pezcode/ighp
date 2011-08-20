@@ -85,29 +85,16 @@ static DLL_Function_ReleaseGlobalHotkeysPlugin ReleaseGlobalHotkeysPlugin;
 extern OSStatus iTunesPluginMainMachO( OSType inMessage, PluginMessageInfo *inMessageInfoPtr, void *refCon );
 
 //########################################
-//	MemClear
-//########################################
-static void MemClear( LogicalAddress dest, SInt32 length )
-{
-	register unsigned char	*ptr;
-
-	ptr = ( unsigned char* ) dest;
-	
-	while ( length-- > 0 )
-		*ptr++ = 0;
-}	// MemClear
-
-//########################################
 //	static ( local ) functions
 //########################################
 static char* GetPluginsPath()
 {
 	static char path[MAX_PATH]; // path to plug-ins folder
-	MemClear(path, sizeof(char) * MAX_PATH);
+	ZeroMemory(path, sizeof(path));
 
-	strncpy_s(path, MAX_PATH, GetCommandLine(), _TRUNCATE);
+	strncpy_s(path, _countof(path), GetCommandLine(), _TRUNCATE);
 	strstr(path, "\\iTunes.exe")[0] = '\0';
-	strcat_s(path, MAX_PATH, "\\Plug-ins\\");
+	strcat_s(path, _countof(path), "\\Plug-ins\\");
 
 	return path + 1;
 }
@@ -115,10 +102,10 @@ static char* GetPluginsPath()
 static char* GetGlobalHotkeysImplDllFromProgramDir()
 {
 	static char path[MAX_PATH]; // path to GlobalHotkeysImpl.dll
-	ZeroMemory(path, sizeof(char) * MAX_PATH);
+	ZeroMemory(path, sizeof(path));
 
-	strncpy_s(path, MAX_PATH, GetPluginsPath(), _TRUNCATE);
-	strcat_s(path, MAX_PATH, kGlobalHotkeysImpl);
+	strncpy_s(path, _countof(path), GetPluginsPath(), _TRUNCATE);
+	strcat_s(path, _countof(path), kGlobalHotkeysImpl);
 
 	return path;
 }
@@ -133,19 +120,19 @@ static char* GetGlobalHotkeysImplDllFromUserDir()
 
 	GetVersionEx(&osvi);
 
-	ZeroMemory(path, sizeof(char) * MAX_PATH);
+	ZeroMemory(path, sizeof(path));
 
 	if (osvi.dwMajorVersion > 5) {
 		// Vista and above
 		SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, path);
-		strcat_s(path, MAX_PATH, "\\Apple Computer");
+		strcat_s(path, _countof(path), "\\Apple Computer");
 	} else {
 		// XP and 2000
 		SHGetFolderPath(NULL, CSIDL_MYMUSIC, NULL, 0, path);
 	}
 
-	strcat_s(path, MAX_PATH, "\\iTunes\\iTunes Plug-ins\\");
-	strcat_s(path, MAX_PATH, kGlobalHotkeysImpl);
+	strcat_s(path, _countof(path), "\\iTunes\\iTunes Plug-ins\\");
+	strcat_s(path, _countof(path), kGlobalHotkeysImpl);
 
 	return path;
 }
@@ -208,7 +195,7 @@ static OSStatus ChangeVisualPort(VisualPluginData *visualPluginData,GRAPHICS_DEV
 */
 static void ResetRenderData(VisualPluginData *visualPluginData)
 {
-	MemClear(&visualPluginData->renderData,sizeof(visualPluginData->renderData));
+	ZeroMemory(&visualPluginData->renderData,sizeof(visualPluginData->renderData));
 
 	visualPluginData->minLevel[0] = 
 		visualPluginData->minLevel[1] =
@@ -308,8 +295,8 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 		case kVisualPluginHideWindowMessage:
 			(void) ChangeVisualPort(visualPluginData,nil,nil);
 
-			MemClear(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
-			MemClear(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
+			ZeroMemory(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
+			ZeroMemory(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
 			break;
 		
 		/*
@@ -365,12 +352,12 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 			if (messageInfo->u.playMessage.trackInfo != nil)
 				visualPluginData->trackInfo = *messageInfo->u.playMessage.trackInfoUnicode;
 			else
-				MemClear(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
+				ZeroMemory(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
 
 			if (messageInfo->u.playMessage.streamInfo != nil)
 				visualPluginData->streamInfo = *messageInfo->u.playMessage.streamInfoUnicode;
 			else
-				MemClear(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
+				ZeroMemory(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
 		
 			visualPluginData->playing = true;
 			break;
@@ -385,12 +372,12 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 			if (messageInfo->u.changeTrackMessage.trackInfo != nil)
 				visualPluginData->trackInfo = *messageInfo->u.changeTrackMessage.trackInfoUnicode;
 			else
-				MemClear(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
+				ZeroMemory(&visualPluginData->trackInfo,sizeof(visualPluginData->trackInfo));
 
 			if (messageInfo->u.changeTrackMessage.streamInfo != nil)
 				visualPluginData->streamInfo = *messageInfo->u.changeTrackMessage.streamInfoUnicode;
 			else
-				MemClear(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
+				ZeroMemory(&visualPluginData->streamInfo,sizeof(visualPluginData->streamInfo));
 			break;
 
 		/*
@@ -446,7 +433,7 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo *messageInfo)
 	PlayerMessageInfo	playerMessageInfo;
 	Str255				pluginName = kTVisualPluginName;
 		
-	MemClear(&playerMessageInfo.u.registerVisualPluginMessage,sizeof(playerMessageInfo.u.registerVisualPluginMessage));
+	ZeroMemory(&playerMessageInfo.u.registerVisualPluginMessage,sizeof(playerMessageInfo.u.registerVisualPluginMessage));
 	
 	// copy in name length byte first
 	playerMessageInfo.u.registerVisualPluginMessage.name[0] = lstrlen(kTVisualPluginName);
@@ -458,7 +445,7 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo *messageInfo)
 	SetNumVersion(&playerMessageInfo.u.registerVisualPluginMessage.pluginVersion,kTVisualPluginMajorVersion,kTVisualPluginMinorVersion,kTVisualPluginReleaseStage,kTVisualPluginNonFinalRelease);
 
 	playerMessageInfo.u.registerVisualPluginMessage.options					= kVisualWantsIdleMessages;
-	playerMessageInfo.u.registerVisualPluginMessage.handler					= (VisualPluginProcPtr)VisualPluginHandler;
+	playerMessageInfo.u.registerVisualPluginMessage.handler					= VisualPluginHandler;
 	playerMessageInfo.u.registerVisualPluginMessage.registerRefCon			= 0;
 	playerMessageInfo.u.registerVisualPluginMessage.creator					= kTVisualPluginCreator;
 	
@@ -468,8 +455,8 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo *messageInfo)
 	
 	playerMessageInfo.u.registerVisualPluginMessage.minWidth				= 64;
 	playerMessageInfo.u.registerVisualPluginMessage.minHeight				= 64;
-	playerMessageInfo.u.registerVisualPluginMessage.maxWidth				= 32767;
-	playerMessageInfo.u.registerVisualPluginMessage.maxHeight				= 32767;
+	playerMessageInfo.u.registerVisualPluginMessage.maxWidth				= SHRT_MAX;
+	playerMessageInfo.u.registerVisualPluginMessage.maxHeight				= SHRT_MAX;
 	playerMessageInfo.u.registerVisualPluginMessage.minFullScreenBitDepth	= 0;
 	playerMessageInfo.u.registerVisualPluginMessage.maxFullScreenBitDepth	= 0;
 	playerMessageInfo.u.registerVisualPluginMessage.windowAlignmentInBytes	= 0;
@@ -477,7 +464,6 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo *messageInfo)
 	status = PlayerRegisterVisualPlugin(messageInfo->u.initMessage.appCookie,messageInfo->u.initMessage.appProc,&playerMessageInfo);
 		
 	return status;
-	
 }
 
 //########################################
@@ -507,5 +493,3 @@ IMPEXP OSStatus MAIN(OSType message,PluginMessageInfo *messageInfo,void *refCon)
 	
 	return status;
 }
-
-

@@ -23,8 +23,6 @@
 #include "GlobalHotkeysDialog.h"
 #include "PluginSettings.h" 
 
-#include <commctrl.h>
-
 extern std::map<const std::string, Actions> actionsMap;
 
 BOOL GlobalHotkeysDialog::OnInitDialog()
@@ -34,8 +32,9 @@ BOOL GlobalHotkeysDialog::OnInitDialog()
 	m_hotkeyTextEdit.AttachDlgItem(IDC_HOTKEY_TEXT, this);
 
 	InitHotkeysListViewColumns();
-	PopulateHotkeysList();
+	m_listviewIndex = 0;
 
+	PopulateHotkeysList();
 	PopulateActionsComboBox();
 
 	return TRUE;
@@ -45,6 +44,23 @@ BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))
     {
+	case IDC_ACTIONS_COMBO:
+		switch(HIWORD(wParam))
+		{
+		case CBN_SELCHANGE:
+			OnSelectedActionChanged();
+			return TRUE;
+		}
+		break;
+	case IDC_ADD:
+		OnAdd();
+		return TRUE;
+	case IDC_CLEAR:
+		OnClear();
+		return TRUE;
+	case IDC_MODIFY:
+		OnModify();
+		return TRUE;
 	case IDAPPLY:
 		OnApply();
 		return TRUE;
@@ -53,72 +69,82 @@ BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
+LRESULT GlobalHotkeysDialog::OnNotify(WPARAM wParam, LPARAM lParam)
+{
+	switch(LPNMHDR(lParam)->idFrom)
+	{
+	case IDC_HOTKEYS_LIST:
+		switch(LPNMHDR(lParam)->code)
+		{
+		case LVN_ITEMCHANGED:
+			OnSelectedListItemChanged(LPNMLISTVIEW(lParam));
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
+
+void GlobalHotkeysDialog::OnAdd()
+{
+	// get combo text
+	// if(exists in listview column 0)
+	//   set column 1
+	// else
+	//   add item
+}
+
+void GlobalHotkeysDialog::OnClear()
+{
+	// get combo text
+	// if(exists in listview column 0)
+	//   delete
+}
+
+void GlobalHotkeysDialog::OnModify()
+{
+	// get combo text
+	// if(exists in listview column 0)
+	//   set column 1
+}
+
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
+	CDialog::OnOK();
 }
 
 void GlobalHotkeysDialog::OnApply()
 {
+	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
 
+	// get listview items
+	// edit hotkeys accordingly
+
+	PluginSettings::Instance()->WriteConfigFile(hotkeys);
 }
 
 void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 {
-	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
-
-	ListView_SetExtendedListViewStyle(hwndListView, LVS_EX_FULLROWSELECT);
+	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
 	// init columns
-	LVCOLUMN lvc;
-	ZeroMemory(&lvc, sizeof(LVCOLUMN));
-
-	lvc.mask = LVCF_FMT | LVCF_ORDER | LVCF_SUBITEM | LVCF_WIDTH | LVCF_TEXT;
-	lvc.fmt = LVCFMT_LEFT;
-	lvc.cx = 172;
-
-	// Action
-	lvc.iOrder = 0;
-	lvc.iSubItem = 0;
-	lvc.pszText = TEXT("Action");
-
-	ListView_InsertColumn(hwndListView, 0, &lvc);
-
-	// Hotkey
-	lvc.iOrder = 1;
-	lvc.iSubItem = 1;
-	lvc.pszText = TEXT("Hotkey");
-
-	ListView_InsertColumn(hwndListView, 1, &lvc);
+	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, 172, 0);
+	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, 172, 1);
 }
 
 void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std::string hotkey)
 {
-	static int index = 0;
-	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
+	m_hotkeysListView.InsertItem(m_listviewIndex, action.c_str());
+	m_hotkeysListView.SetItemText(m_listviewIndex, 1, hotkey.c_str());
 
-	LVITEM lvi;
-	ZeroMemory(&lvi, sizeof(LVITEM));
-
-	lvi.mask = LVIF_TEXT | LVIF_STATE;
-	lvi.state = 0;
-	lvi.stateMask = 0;
-	lvi.iItem = index;
-	lvi.iSubItem = 0;
-	lvi.pszText = (LPSTR) action.c_str();
-
-	ListView_InsertItem(hwndListView, &lvi);
-	ListView_SetItemText(hwndListView, index, 1, (LPSTR) hotkey.c_str());
-
-	index++;
+	m_listviewIndex++;
 }
 
 void GlobalHotkeysDialog::PopulateHotkeysList()
 {
-	//HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
-
 	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
-	std::map<const unsigned int, Hotkey*>::iterator iter;
+	std::map<const unsigned int, Hotkey*>::const_iterator iter;
 
 	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
 		const std::string action = iter->second->GetActionName();
@@ -130,99 +156,47 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 
 void GlobalHotkeysDialog::PopulateActionsComboBox()
 {
-	CWnd* wndCombo = GetDlgItem(IDC_ACTIONS_COMBO);
-
-	std::map<const std::string, Actions>::iterator iter;
+	std::map<const std::string, Actions>::const_iterator iter;
 	for (iter = actionsMap.begin(); iter != actionsMap.end(); iter++) {
-		wndCombo->SendMessage(CB_ADDSTRING, 0, (LPARAM) iter->first.c_str());
+		m_actionsComboBox.AddString(iter->first.c_str());
 	}	 
 }
 
-LRESULT ActionsComboBox::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+void GlobalHotkeysDialog::OnSelectedActionChanged()
 {
-	if (uMsg == WM_COMMAND && HIWORD(wParam) == CBN_SELCHANGE)
-		OnSelectedActionChanged();
-
-	return WndProcDefault(uMsg, wParam, lParam);
-}
-
-void ActionsComboBox::OnSelectedActionChanged()
-{
-	CWnd* wndListView = GetParent()->GetDlgItem(IDC_HOTKEYS_LIST);
-	CWnd* wndCombo    = GetParent()->GetDlgItem(IDC_ACTIONS_COMBO);
-	CWnd* wndEditText = GetParent()->GetDlgItem(IDC_HOTKEY_TEXT);
-
-	char selectedItem[255];
-	ZeroMemory(&selectedItem, sizeof(char) * 255);
-
-	if (0 == wndCombo->SendMessage(WM_GETTEXT, sizeof(selectedItem), (LPARAM) &selectedItem))
+	CString textCombo = m_actionsComboBox.GetWindowText();
+	if(textCombo.GetLength() == 0)
 		return;
 
 	LVFINDINFO lfi;
 	ZeroMemory(&lfi, sizeof(LVFINDINFO));
 
 	lfi.flags = LVFI_STRING;
-	lfi.psz = selectedItem;
+	lfi.psz = textCombo.c_str();
 
-	int index = ListView_FindItem(wndListView->GetHwnd(), -1, &lfi);
-	ZeroMemory(&selectedItem, sizeof(char) * 255);
-
+	int index = m_hotkeysListView.FindItem(lfi);
 	if (-1 == index) {
-		ListView_SetItemState(wndListView->GetHwnd(), index, 0 , LVIS_SELECTED);
-		wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
+		m_hotkeysListView.SetItemState(index, 0, LVIS_SELECTED);
+		m_hotkeyTextEdit.SetWindowText(textCombo.c_str());
 		return;
 	}
 
-	ListView_SetItemState(wndListView->GetHwnd(), index, LVIS_SELECTED , LVIS_SELECTED);
-	ListView_GetItemText (wndListView->GetHwnd(), index, 1, selectedItem, 255);
-	wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
+	m_hotkeysListView.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
+	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
+	m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
 }
 
-LRESULT HotkeysListView::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 {
-	if (uMsg == WM_NOTIFY && (LPNMHDR(lParam))->code == LVN_ITEMCHANGED) {
-		OnSelectedListItemChanged(LPNMLISTVIEW(lParam));
-	}
-
-	return WndProcDefault(uMsg, wParam, lParam);
-}
-
-void HotkeysListView::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
-{
-	CWnd* wndListView = GetParent()->GetDlgItem(IDC_HOTKEYS_LIST);
-	CWnd* wndCombo    = GetParent()->GetDlgItem(IDC_ACTIONS_COMBO);
-	CWnd* wndEditText = GetParent()->GetDlgItem(IDC_HOTKEY_TEXT);
-
-	int i = 0; i = 1/ i;
-
-	if (lpStateChange->uOldState == LVIS_SELECTED || lpStateChange->uNewState != LVIS_SELECTED)
+	if ((lpStateChange->uOldState & LVIS_SELECTED) || !(lpStateChange->uNewState & LVIS_SELECTED))
 		return;
 
 	int index = lpStateChange->iItem;
+	std::string textAction = m_hotkeysListView.GetItemText(index, 0);
 
-	char selectedItem[255];
-	ZeroMemory(&selectedItem, sizeof(char) * 255);
+	int cbItemIndex = m_actionsComboBox.FindStringExact(-1, textAction.c_str());
+	m_actionsComboBox.SetCurSel(cbItemIndex);
 
-	ListView_GetItemText (wndListView->GetHwnd(), index, 0, selectedItem, 255);
-	
-	int cbItemIndex = wndCombo->SendMessage(CB_FINDSTRINGEXACT, -1, (LPARAM)(LPCSTR)&selectedItem);
-	int cbSelectedIndex = wndCombo->SendMessage(CB_GETCURSEL, 0, 0);
-
-	if (cbSelectedIndex != cbItemIndex)
-		wndCombo->SendMessage(CB_SETCURSEL, cbItemIndex, 0);
-
-	ZeroMemory(&selectedItem, sizeof(char) * 255);
-	ListView_GetItemText (wndListView->GetHwnd(), index, 1, selectedItem, 255);
-	wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
-}
-
-LRESULT HotkeyTextEdit::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	default:
-		break;
-	}
-
-	return WndProcDefault(uMsg, wParam, lParam);
+	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
+	m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
 }
