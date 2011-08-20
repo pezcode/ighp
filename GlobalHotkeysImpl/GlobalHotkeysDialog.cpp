@@ -65,7 +65,7 @@ void GlobalHotkeysDialog::OnApply()
 
 void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 {
-	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST);
+	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
 
 	ListView_SetExtendedListViewStyle(hwndListView, LVS_EX_FULLROWSELECT);
 
@@ -95,7 +95,7 @@ void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std::string hotkey)
 {
 	static int index = 0;
-	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST);
+	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
 
 	LVITEM lvi;
 	ZeroMemory(&lvi, sizeof(LVITEM));
@@ -115,7 +115,7 @@ void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std:
 
 void GlobalHotkeysDialog::PopulateHotkeysList()
 {
-	HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST);
+	//HWND hwndListView = GetDlgItem(IDC_HOTKEYS_LIST)->GetHwnd();
 
 	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
 	std::map<const unsigned int, Hotkey*>::iterator iter;
@@ -130,32 +130,32 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 
 void GlobalHotkeysDialog::PopulateActionsComboBox()
 {
-	HWND hwndCombo = GetDlgItem(IDC_ACTIONS_COMBO);
+	CWnd* wndCombo = GetDlgItem(IDC_ACTIONS_COMBO);
 
 	std::map<const std::string, Actions>::iterator iter;
 	for (iter = actionsMap.begin(); iter != actionsMap.end(); iter++) {
-		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM) iter->first.c_str());
+		wndCombo->SendMessage(CB_ADDSTRING, 0, (LPARAM) iter->first.c_str());
 	}	 
 }
 
-LRESULT ActionsComboBox::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT ActionsComboBox::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_COMMAND && HIWORD(wParam) == CBN_SELCHANGE)
 		OnSelectedActionChanged();
 
-	return WndProcDefault(hWnd, uMsg, wParam, lParam);
+	return WndProcDefault(uMsg, wParam, lParam);
 }
 
 void ActionsComboBox::OnSelectedActionChanged()
 {
-	HWND hwndListView = ::GetDlgItem(m_hWndParent, IDC_HOTKEYS_LIST);
-	HWND hwndCombo = ::GetDlgItem(m_hWndParent, IDC_ACTIONS_COMBO);
-	HWND hwndEditText = ::GetDlgItem(m_hWndParent, IDC_HOTKEY_TEXT);
+	CWnd* wndListView = GetParent()->GetDlgItem(IDC_HOTKEYS_LIST);
+	CWnd* wndCombo    = GetParent()->GetDlgItem(IDC_ACTIONS_COMBO);
+	CWnd* wndEditText = GetParent()->GetDlgItem(IDC_HOTKEY_TEXT);
 
 	char selectedItem[255];
 	ZeroMemory(&selectedItem, sizeof(char) * 255);
 
-	if (0 == SendMessage(hwndCombo, WM_GETTEXT, 255, (LPARAM) &selectedItem))
+	if (0 == wndCombo->SendMessage(WM_GETTEXT, sizeof(selectedItem), (LPARAM) &selectedItem))
 		return;
 
 	LVFINDINFO lfi;
@@ -164,34 +164,34 @@ void ActionsComboBox::OnSelectedActionChanged()
 	lfi.flags = LVFI_STRING;
 	lfi.psz = selectedItem;
 
-	int index = ListView_FindItem(hwndListView, -1, &lfi);
+	int index = ListView_FindItem(wndListView->GetHwnd(), -1, &lfi);
 	ZeroMemory(&selectedItem, sizeof(char) * 255);
 
 	if (-1 == index) {
-		ListView_SetItemState(hwndListView, index, 0 , LVIS_SELECTED);
-		SendMessage(hwndEditText, WM_SETTEXT, 0, (LPARAM) &selectedItem);
+		ListView_SetItemState(wndListView->GetHwnd(), index, 0 , LVIS_SELECTED);
+		wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
 		return;
 	}
 
-	ListView_SetItemState(hwndListView, index, LVIS_SELECTED , LVIS_SELECTED);
-	ListView_GetItemText (hwndListView, index, 1, selectedItem, 255);
-	SendMessage(hwndEditText, WM_SETTEXT, 0, (LPARAM) &selectedItem);
+	ListView_SetItemState(wndListView->GetHwnd(), index, LVIS_SELECTED , LVIS_SELECTED);
+	ListView_GetItemText (wndListView->GetHwnd(), index, 1, selectedItem, 255);
+	wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
 }
 
-LRESULT HotkeysListView::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT HotkeysListView::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_NOTIFY && (LPNMHDR(lParam))->code == LVN_ITEMCHANGED) {
 		OnSelectedListItemChanged(LPNMLISTVIEW(lParam));
 	}
 
-	return WndProcDefault(hWnd, uMsg, wParam, lParam);
+	return WndProcDefault(uMsg, wParam, lParam);
 }
 
 void HotkeysListView::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 {
-	HWND hwndListView = ::GetDlgItem(m_hWndParent, IDC_HOTKEYS_LIST);
-	HWND hwndCombo = ::GetDlgItem(m_hWndParent, IDC_ACTIONS_COMBO);
-	HWND hwndEditText = ::GetDlgItem(m_hWndParent, IDC_HOTKEY_TEXT);
+	CWnd* wndListView = GetParent()->GetDlgItem(IDC_HOTKEYS_LIST);
+	CWnd* wndCombo    = GetParent()->GetDlgItem(IDC_ACTIONS_COMBO);
+	CWnd* wndEditText = GetParent()->GetDlgItem(IDC_HOTKEY_TEXT);
 
 	int i = 0; i = 1/ i;
 
@@ -203,20 +203,20 @@ void HotkeysListView::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 	char selectedItem[255];
 	ZeroMemory(&selectedItem, sizeof(char) * 255);
 
-	ListView_GetItemText (hwndListView, index, 0, selectedItem, 255);
+	ListView_GetItemText (wndListView->GetHwnd(), index, 0, selectedItem, 255);
 	
-	int cbItemIndex = SendMessage(hwndCombo, CB_FINDSTRINGEXACT, -1, (LPARAM)(LPCSTR)&selectedItem);
-	int cbSelectedIndex = SendMessage(hwndCombo, CB_GETCURSEL, 0, 0);
+	int cbItemIndex = wndCombo->SendMessage(CB_FINDSTRINGEXACT, -1, (LPARAM)(LPCSTR)&selectedItem);
+	int cbSelectedIndex = wndCombo->SendMessage(CB_GETCURSEL, 0, 0);
 
 	if (cbSelectedIndex != cbItemIndex)
-		SendMessage(hwndCombo, CB_SETCURSEL, cbItemIndex, 0);
+		wndCombo->SendMessage(CB_SETCURSEL, cbItemIndex, 0);
 
 	ZeroMemory(&selectedItem, sizeof(char) * 255);
-	ListView_GetItemText (hwndListView, index, 1, selectedItem, 255);
-	SendMessage(hwndEditText, WM_SETTEXT, 0, (LPARAM) &selectedItem);
+	ListView_GetItemText (wndListView->GetHwnd(), index, 1, selectedItem, 255);
+	wndEditText->SendMessage(WM_SETTEXT, 0, (LPARAM) &selectedItem);
 }
 
-LRESULT HotkeyTextEdit::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT HotkeyTextEdit::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
@@ -224,5 +224,5 @@ LRESULT HotkeyTextEdit::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		break;
 	}
 
-	return WndProcDefault(hWnd, uMsg, wParam, lParam);
+	return WndProcDefault(uMsg, wParam, lParam);
 }

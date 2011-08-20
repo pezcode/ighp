@@ -102,7 +102,7 @@ static void MemClear( LogicalAddress dest, SInt32 length )
 //########################################
 static char* GetPluginsPath()
 {
-	char path[MAX_PATH]; // path to plug-ins folder
+	static char path[MAX_PATH]; // path to plug-ins folder
 	MemClear(path, sizeof(char) * MAX_PATH);
 
 	strncpy_s(path, MAX_PATH, GetCommandLine(), _TRUNCATE);
@@ -114,7 +114,7 @@ static char* GetPluginsPath()
 
 static char* GetGlobalHotkeysImplDllFromProgramDir()
 {
-	char path[MAX_PATH]; // path to GlobalHotkeysImpl.dll
+	static char path[MAX_PATH]; // path to GlobalHotkeysImpl.dll
 	ZeroMemory(path, sizeof(char) * MAX_PATH);
 
 	strncpy_s(path, MAX_PATH, GetPluginsPath(), _TRUNCATE);
@@ -125,7 +125,7 @@ static char* GetGlobalHotkeysImplDllFromProgramDir()
 
 static char* GetGlobalHotkeysImplDllFromUserDir()
 {
-	char path[MAX_PATH];
+	static char path[MAX_PATH];
 	OSVERSIONINFO osvi;
 
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));

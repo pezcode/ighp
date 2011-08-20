@@ -38,7 +38,7 @@ public:
 	virtual ~GlobalHotkeysWnd() { }
 
 protected:
-	virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual void PreRegisterClass(WNDCLASS &wc);
 	virtual void PreCreate(CREATESTRUCT &cs);
 

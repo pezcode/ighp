@@ -37,58 +37,58 @@ GlobalHotkeysPlugin::GlobalHotkeysPlugin()
 
 GlobalHotkeysPlugin::~GlobalHotkeysPlugin()
 {
-	m_mainWindow.DestroyWindow();
+	m_mainWindow.Destroy();
 
 	::PostQuitMessage(0);
 }
 
 void GlobalHotkeysWnd::PreRegisterClass(WNDCLASS &wc)
 {
-	m_wc.style			= CS_HREDRAW|CS_VREDRAW;
-	m_wc.lpfnWndProc	= CWnd::StaticWindowProc;
-	m_wc.cbClsExtra		= 0;
-	m_wc.cbWndExtra		= 0;
-	m_wc.hInstance		= GetApp()->GetInstanceHandle();
-	m_wc.hIcon			= NULL;
-	m_wc.hCursor		= LoadCursor (NULL, IDC_ARROW);
-	m_wc.hbrBackground	= (HBRUSH) (COLOR_WINDOW+1);
-	m_wc.lpszMenuName	= NULL;
-	m_wc.lpszClassName  = TEXT("GlobalHotkeysClass");
+	wc.style            = CS_HREDRAW|CS_VREDRAW;
+	wc.lpfnWndProc      = CWnd::StaticWindowProc;
+	wc.cbClsExtra       = 0;
+	wc.cbWndExtra       = 0;
+	wc.hInstance        = GetApp()->GetInstanceHandle();
+	wc.hIcon            = NULL;
+	wc.hCursor          = LoadCursor (NULL, IDC_ARROW);
+	wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
+	wc.lpszMenuName     = NULL;
+	wc.lpszClassName    = TEXT("GlobalHotkeysClass");
 }
 
 void GlobalHotkeysWnd::PreCreate(CREATESTRUCT &cs)
 {
-	m_cs.cx             = CW_USEDEFAULT;
-	m_cs.cy             = CW_USEDEFAULT;
-	m_cs.dwExStyle      = WS_EX_TRANSPARENT;
-	m_cs.hInstance      = GetApp()->GetInstanceHandle();
-	m_cs.hMenu          = NULL;
-	m_cs.hwndParent     = NULL;
-	m_cs.lpCreateParams = cs.lpCreateParams;
-	m_cs.lpszClass      = cs.lpszClass;
-	m_cs.lpszName       = TEXT("Global Hotkeys");
-	m_cs.style          = WS_POPUP;
-	m_cs.x              = CW_USEDEFAULT;
-	m_cs.y              = CW_USEDEFAULT;
+	cs.cx             = CW_USEDEFAULT;
+	cs.cy             = CW_USEDEFAULT;
+	cs.dwExStyle      = WS_EX_TRANSPARENT;
+	cs.hInstance      = GetApp()->GetInstanceHandle();
+	cs.hMenu          = NULL;
+	cs.hwndParent     = NULL;
+	cs.lpCreateParams = cs.lpCreateParams;
+	cs.lpszClass      = cs.lpszClass;
+	cs.lpszName       = TEXT("Global Hotkeys");
+	cs.style          = WS_POPUP;
+	cs.x              = CW_USEDEFAULT;
+	cs.y              = CW_USEDEFAULT;
 }
 
-LRESULT GlobalHotkeysWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_CREATE:
-		OnCreate(hWnd);
+		OnCreate(m_hWnd);
 		break;
 	case WM_HOTKEY:
 		OnHotkey(wParam, lParam);
 		break;
 	case WM_DESTROY:
-		OnDestroy(hWnd);
+		OnDestroy(m_hWnd);
 		break;
 	}
 
 	// Pass unhandled messages on to parent DialogProc
-	return WndProcDefault(hWnd, uMsg, wParam, lParam);
+	return WndProcDefault(uMsg, wParam, lParam);
 }
 
 

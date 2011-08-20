@@ -36,7 +36,7 @@ public:
 	virtual ~ActionsComboBox() { };
 
 private:
-	virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	void OnSelectedActionChanged();
 };
@@ -48,7 +48,7 @@ public:
 	virtual ~HotkeysListView() { };
 
 private:
-	virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	void OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange);
 };
@@ -60,14 +60,14 @@ public:
 	virtual ~HotkeyTextEdit() { };
 
 private:
-	virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 };
 
 class GlobalHotkeysDialog : public CDialog
 {
 public:
-	explicit GlobalHotkeysDialog(UINT nResID, HWND hWndParent = NULL) : CDialog(nResID, hWndParent) { };
+	explicit GlobalHotkeysDialog(UINT nResID, CWnd* pParent = NULL) : CDialog(nResID, pParent) { };
 	virtual ~GlobalHotkeysDialog() { };
 
 protected:
