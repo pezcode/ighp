@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+  Here is an example of a hotkey:
+  
+  <hotkey name="Play" action="PlayPause" key="space" alt="true" control="true" shift="true" win="true"/>
+  
+  Action can have one of the following values: PlayPause, NextTrack, 
+  PreviousTrack, ToggleRandom, ToggleRepeat, SongRatingClear, SongRating1, 
+  SongRating2, SongRating3, SongRating4, SongRating5, ShowHide, VolumeUp,
+  VolumeDown, ToggleMute
+  
+  Key can have one of the following values: a-z, A-Z, 0-9, F1-F24, 
+  Spacebar, Backspace, Tab, Escape, PageUp, PageDown, End, Home, Left, Up, 
+  Right, Down, Insert, Delete, PrintScreen, Pause, NumLock, -, =, /, . and ,
+  
+-->
+
+<hotkeys>
+  <hotkey name="Play" action="PlayPause" key="Spacebar" alt="true"/>
+  <hotkey name="Next" action="NextTrack" key="." alt="true"/>
+  <hotkey name="Prev" action="PreviousTrack" key="," alt="true"/>
+  <hotkey name="Show" action="ShowHide" key="q" alt="true"/>
+  <hotkey name="VolUp" action="VolumeUp" key="a" alt="true"/>
+  <hotkey name="VolDown" action="VolumeDown" key="z" alt="true"/>
+
+  <!--
+  <hotkey name="Random" action="ToggleRandom" key="s" alt="true"/>
+  <hotkey name="Repeat" action="ToggleRepeat" key="d" alt="true"/>
+  <hotkey name="ClearRate" action="SongRatingClear" key="0" alt="true"/>
+  <hotkey name="Rate1" action="SongRating1" key="1" alt="true"/>
+  <hotkey name="Rate2" action="SongRating2" key="2" alt="true"/>
+  <hotkey name="Rate3" action="SongRating3" key="3" alt="true"/>
+  <hotkey name="Rate4" action="SongRating4" key="4" alt="true"/>
+  <hotkey name="Rate5" action="SongRating5" key="5" alt="true"/>
+  <hotkey name="Mute" action="ToggleMute" key="m" alt="true"/>
+  -->
+  
+</hotkeys>
