@@ -98,7 +98,7 @@ void OpenSettingsFile()
 		return;
 
 	char params[MAX_PATH];
-	ZeroMemory(params, sizeof(char) * MAX_PATH);
+	ZeroMemory(params, sizeof(params));
 
 	strncpy_s(params, MAX_PATH, "notepad.exe ", _TRUNCATE);
 	strcat_s(params, MAX_PATH, configFilePath.c_str());

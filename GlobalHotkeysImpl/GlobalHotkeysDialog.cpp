@@ -31,6 +31,8 @@ BOOL GlobalHotkeysDialog::OnInitDialog()
 	m_actionsComboBox.AttachDlgItem(IDC_ACTIONS_COMBO, this);
 	m_hotkeyTextEdit.AttachDlgItem(IDC_HOTKEY_TEXT, this);
 
+	m_applyButton.AttachDlgItem(IDAPPLY, this);
+
 	InitHotkeysListViewColumns();
 	m_listviewIndex = 0;
 
@@ -92,6 +94,9 @@ void GlobalHotkeysDialog::OnAdd()
 	//   set column 1
 	// else
 	//   add item
+	// 
+
+	m_applyButton.EnableWindow(TRUE);
 }
 
 void GlobalHotkeysDialog::OnClear()
@@ -99,6 +104,9 @@ void GlobalHotkeysDialog::OnClear()
 	// get combo text
 	// if(exists in listview column 0)
 	//   delete
+	// 
+
+	m_applyButton.EnableWindow(TRUE);
 }
 
 void GlobalHotkeysDialog::OnModify()
@@ -106,12 +114,20 @@ void GlobalHotkeysDialog::OnModify()
 	// get combo text
 	// if(exists in listview column 0)
 	//   set column 1
+	//   
+	m_applyButton.EnableWindow(TRUE);
 }
 
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
 	CDialog::OnOK();
+}
+
+void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
+{
+	//ReloadHotkeys();
+	CDialog::EndDialog(nResult);
 }
 
 void GlobalHotkeysDialog::OnApply()
@@ -122,13 +138,14 @@ void GlobalHotkeysDialog::OnApply()
 	// edit hotkeys accordingly
 
 	PluginSettings::Instance()->WriteConfigFile(hotkeys);
+
+	m_applyButton.EnableWindow(FALSE);
 }
 
 void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
-	// init columns
 	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, 172, 0);
 	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, 172, 1);
 }

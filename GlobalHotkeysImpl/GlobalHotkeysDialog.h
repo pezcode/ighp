@@ -43,11 +43,15 @@ protected:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
 	virtual void OnOK();
+	virtual void EndDialog(INT_PTR nResult);
 
 private:
 	CComboBox m_actionsComboBox;
 	CListView m_hotkeysListView;
 	CEdit m_hotkeyTextEdit;
+
+	CButton m_applyButton;
+
 	int m_listviewIndex;
 
 	void OnAdd();
