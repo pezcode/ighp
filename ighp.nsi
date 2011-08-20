@@ -6,8 +6,8 @@
 ;======================================================
 ; Installer Information
  
-Name "iTunes Global Hotkeys Plugin v0.0.3"
-OutFile "ighp_0.0.3.exe"
+Name "iTunes Global Hotkeys Plugin v0.0.4"
+OutFile "ighp_0.0.4.exe"
 InstallDir "$PROGRAMFILES\iTunes\Plug-ins"
 
 ;======================================================
