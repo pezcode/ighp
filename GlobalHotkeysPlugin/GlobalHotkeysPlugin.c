@@ -154,7 +154,7 @@ static void LoadGlobalHotkeysImplDll()
 {
 	if (NULL == (hDLL = LoadLibrary(GetGlobalHotkeysImplDllFromUserDir()))) {
 		if (NULL == (hDLL = LoadLibrary(GetGlobalHotkeysImplDllFromProgramDir()))) {
-			MessageBox(NULL, "Could nod load GlobalHotkeysImpl.dll", "Global Hotkeys", MB_OK | MB_ICONERROR);
+			MessageBox(NULL, "Could not load GlobalHotkeysImpl.dll", "Global Hotkeys", MB_OK | MB_ICONERROR);
 		}
 	}
 

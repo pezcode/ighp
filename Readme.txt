@@ -1,7 +1,7 @@
 
-Global Hotkeys for iTunes v0.0.3
+Global Hotkeys for iTunes v0.0.4
 http://ighp.berlios.de
-
+https://github.com/pezcode/ighp
 
 
 iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger 
@@ -38,7 +38,8 @@ ReloadHotkeys      read the configuration file and reload the hotkey bindings
 
 
 The latest release of the plugin can be found on 
-http://developer.berlios.de/project/filelist.php?group_id=9978. You can choose 
+http://developer.berlios.de/project/filelist.php?group_id=9978 or
+https://github.com/pezcode/ighp. You can choose 
 between the installer, the binary package or the source package. The source 
 code can be compiled using Visual C++ 2005 Express and above. If you downloaded
 the dll files or the source code you must copy them to the iTunes plugins
