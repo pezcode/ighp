@@ -58,18 +58,17 @@ void GlobalHotkeysWnd::PreRegisterClass(WNDCLASS &wc)
 
 void GlobalHotkeysWnd::PreCreate(CREATESTRUCT &cs)
 {
-	cs.cx             = CW_USEDEFAULT;
-	cs.cy             = CW_USEDEFAULT;
-	cs.dwExStyle      = WS_EX_TRANSPARENT;
 	cs.hInstance      = GetApp()->GetInstanceHandle();
 	cs.hMenu          = NULL;
 	cs.hwndParent     = NULL;
-	cs.lpCreateParams = cs.lpCreateParams;
-	cs.lpszClass      = cs.lpszClass;
+	cs.lpCreateParams = NULL;
 	cs.lpszName       = TEXT("Global Hotkeys");
 	cs.style          = WS_POPUP;
+	cs.dwExStyle      = WS_EX_TRANSPARENT;
 	cs.x              = CW_USEDEFAULT;
 	cs.y              = CW_USEDEFAULT;
+	cs.cx             = CW_USEDEFAULT;
+	cs.cy             = CW_USEDEFAULT;
 }
 
 LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)

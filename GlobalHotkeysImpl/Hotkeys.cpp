@@ -182,6 +182,8 @@ void (*Hotkey::GetAction(const std::string action_name))(void)
 		return &VolumeDown;
 	case eActionToggleMute:
 		return &ToggleMute;
+	case eActionQuit:
+		return &Quit;
 	default:
 		return 0;
 	}

@@ -25,13 +25,32 @@
 
 extern std::map<const std::string, Actions> actionsMap;
 
+void CHotkey::PreCreate(CREATESTRUCT &cs)
+{
+	cs.hInstance      = GetApp()->GetInstanceHandle();
+	cs.hMenu          = NULL;
+	cs.hwndParent     = NULL;
+	cs.lpCreateParams = NULL;
+	cs.lpszName       = TEXT("");
+	cs.lpszClass      = HOTKEY_CLASS;
+	cs.style          = WS_CHILD | WS_VISIBLE;
+	cs.dwExStyle      = NULL;
+	cs.x              = CW_USEDEFAULT;
+	cs.y              = CW_USEDEFAULT;
+	cs.cx             = CW_USEDEFAULT;
+	cs.cy             = CW_USEDEFAULT;
+}
+
 BOOL GlobalHotkeysDialog::OnInitDialog()
 {
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
 	m_actionsComboBox.AttachDlgItem(IDC_ACTIONS_COMBO, this);
-	m_hotkeyTextEdit.AttachDlgItem(IDC_HOTKEY_TEXT, this);
+	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
 
 	m_applyButton.AttachDlgItem(IDAPPLY, this);
+
+	// no unmodified keys, add default ctrl
+	m_hotkeyInput.SetRules(HKCOMB_NONE, MAKELPARAM(HKCOMB_C, 0));
 
 	InitHotkeysListViewColumns();
 	m_listviewIndex = 0;
@@ -50,7 +69,7 @@ BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 		switch(HIWORD(wParam))
 		{
 		case CBN_SELCHANGE:
-			OnSelectedActionChanged();
+			//OnSelectedActionChanged();
 			return TRUE;
 		}
 		break;
@@ -96,7 +115,7 @@ void GlobalHotkeysDialog::OnAdd()
 	//   add item
 	// 
 
-	m_applyButton.EnableWindow(TRUE);
+	m_applyButton.EnableWindow(true);
 }
 
 void GlobalHotkeysDialog::OnClear()
@@ -106,7 +125,7 @@ void GlobalHotkeysDialog::OnClear()
 	//   delete
 	// 
 
-	m_applyButton.EnableWindow(TRUE);
+	m_applyButton.EnableWindow(true);
 }
 
 void GlobalHotkeysDialog::OnModify()
@@ -115,18 +134,18 @@ void GlobalHotkeysDialog::OnModify()
 	// if(exists in listview column 0)
 	//   set column 1
 	//   
-	m_applyButton.EnableWindow(TRUE);
+	m_applyButton.EnableWindow(true);
 }
 
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
+	ReloadHotkeys();
 	CDialog::OnOK();
 }
 
 void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
 {
-	//ReloadHotkeys();
 	CDialog::EndDialog(nResult);
 }
 
@@ -139,15 +158,17 @@ void GlobalHotkeysDialog::OnApply()
 
 	PluginSettings::Instance()->WriteConfigFile(hotkeys);
 
-	m_applyButton.EnableWindow(FALSE);
+	m_applyButton.EnableWindow(false);
 }
 
 void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
-	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, 172, 0);
-	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, 172, 1);
+	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, 150, 0);
+	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, -1, 1);
+
+	//m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std::string hotkey)
@@ -166,9 +187,15 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
 		const std::string action = iter->second->GetActionName();
 		const std::string hotkey = iter->second->GetHotkeyName();
-		
+
+		//WORD key = iter->second->GetKeyCode();
+		//key |= iter->second->
+
 		AddHotkeyListItem(action, hotkey);
 	}
+
+	// Update second column (account for possible scrollbar)
+	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void GlobalHotkeysDialog::PopulateActionsComboBox()
@@ -179,6 +206,7 @@ void GlobalHotkeysDialog::PopulateActionsComboBox()
 	}	 
 }
 
+//unused
 void GlobalHotkeysDialog::OnSelectedActionChanged()
 {
 	CString textCombo = m_actionsComboBox.GetWindowText();
@@ -194,13 +222,13 @@ void GlobalHotkeysDialog::OnSelectedActionChanged()
 	int index = m_hotkeysListView.FindItem(lfi);
 	if (-1 == index) {
 		m_hotkeysListView.SetItemState(index, 0, LVIS_SELECTED);
-		m_hotkeyTextEdit.SetWindowText(textCombo.c_str());
+		//m_hotkeyTextEdit.SetWindowText(textCombo.c_str());
 		return;
 	}
 
 	m_hotkeysListView.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
 	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
-	m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
+	//m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
 }
 
 void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
@@ -215,5 +243,6 @@ void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 	m_actionsComboBox.SetCurSel(cbItemIndex);
 
 	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
-	m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
+	//m_hotkeyInput.SetHotKey();
+	//m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
 }

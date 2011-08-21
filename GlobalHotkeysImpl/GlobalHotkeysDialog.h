@@ -32,6 +32,31 @@
 #include <Win32++\listview.h>
 #include "resource.h"
 
+class CHotkey : public CWnd
+{
+public:
+	explicit CHotkey() { } 
+	virtual ~CHotkey() { }
+
+	WORD GetHotKey()
+	{
+		return (WORD)SendMessage(HKM_GETHOTKEY, 0, 0);
+	}
+
+	void SetHotKey(BYTE bKeyCode, BYTE bModifier)
+	{
+		SendMessage(HKM_SETHOTKEY, 0, MAKEWORD(bKeyCode, bModifier));
+	}
+
+	void SetRules(WORD wInvalid, WORD wReplacement)
+	{
+		SendMessage(HKM_SETRULES, wInvalid, wReplacement);
+	}
+
+protected:
+	virtual void PreCreate(CREATESTRUCT &cs);
+};
+
 class GlobalHotkeysDialog : public CDialog
 {
 public:
@@ -48,7 +73,7 @@ protected:
 private:
 	CComboBox m_actionsComboBox;
 	CListView m_hotkeysListView;
-	CEdit m_hotkeyTextEdit;
+	CHotkey m_hotkeyInput;
 
 	CButton m_applyButton;
 
@@ -63,6 +88,8 @@ private:
 	void InitHotkeysListViewColumns();
 	void PopulateHotkeysList();
 	void PopulateActionsComboBox();
+
+	void CreateHotkeyControl();
 
 	void AddHotkeyListItem(const std::string action, const std::string hotkey);
 
