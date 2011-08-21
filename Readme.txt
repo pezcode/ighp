@@ -32,6 +32,7 @@ VolumeDown         decrease volume level
 ToggleMute         toggle mute/unmute
 OpenSettingsFile   open settings file in notepad
 ReloadHotkeys      read the configuration file and reload the hotkey bindings
+Quit               exit iTunes
 
 
  * Download and Install

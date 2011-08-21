@@ -46,7 +46,8 @@ static enum Actions
 	eActionShowHide,
 	eActionVolumeUp,
 	eActionVolumeDown,
-	eActionToggleMute
+	eActionToggleMute,
+	eActionQuit
 };
 
 extern std::map<const std::string, Actions> actionsMap;
@@ -72,5 +73,6 @@ void ShowHide();
 void VolumeUp();
 void VolumeDown();
 void ToggleMute();
+void Quit();
 
 #endif /* ACTIONS_H */

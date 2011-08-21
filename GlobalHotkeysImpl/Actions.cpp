@@ -57,6 +57,7 @@ void InitActionsMap()
 	actionsMap["VolumeUp"] = eActionVolumeUp;
 	actionsMap["VolumeDown"] = eActionVolumeDown;
 	actionsMap["ToggleMute"] = eActionToggleMute;
+	actionsMap["Quit"] = eActionQuit;
 }
 
 void ReloadHotkeys()
@@ -375,6 +376,24 @@ void ToggleMute()
 		isMuted = (isMuted == 0) ? -1 : 0;
 		iITunes->put_Mute(isMuted);
 
+		iITunes->Release();
+	}
+
+	CoUninitialize();
+}
+
+void Quit()
+{
+	IiTunes* iITunes = 0;
+	HRESULT hRes;
+
+	CoInitialize(0);
+
+	// Create itunes interface
+    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+
+	if(hRes == S_OK && iITunes) {
+		iITunes->Quit();
 		iITunes->Release();
 	}
 
