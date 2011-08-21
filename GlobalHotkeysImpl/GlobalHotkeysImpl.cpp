@@ -66,3 +66,8 @@ extern "C" void WINAPI ReleaseGlobalHotkeysPlugin()
 
 	PluginSettings::Destroy();
 }
+
+extern "C" void WINAPI ShowSettingsDialog()
+{
+	OpenSettingsDialog();
+}

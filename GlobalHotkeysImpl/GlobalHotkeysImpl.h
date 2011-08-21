@@ -36,6 +36,8 @@ typedef void (WINAPI *DLL_Function_Release) ();
 typedef void (WINAPI *DLL_Function_InitGlobalHotkeysPlugin) ();
 typedef void (WINAPI *DLL_Function_ReleaseGlobalHotkeysPlugin) ();
 
+typedef void (WINAPI *DLL_Function_ShowSettingsDialog) ();
+
 #if defined (__cplusplus)
 }
 #endif

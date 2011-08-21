@@ -6,5 +6,4 @@ Initialize @1
 Release @2
 InitGlobalHotkeysPlugin @3
 ReleaseGlobalHotkeysPlugin @4
-
-
+ShowSettingsDialog @5
