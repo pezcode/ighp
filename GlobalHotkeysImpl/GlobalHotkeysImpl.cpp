@@ -67,7 +67,11 @@ extern "C" void WINAPI ReleaseGlobalHotkeysPlugin()
 	PluginSettings::Destroy();
 }
 
-extern "C" void WINAPI ShowSettingsDialog()
+extern "C" void WINAPI ShowSettingsDialog(HWND parent)
 {
-	OpenSettingsDialog();
+	GlobalHotkeysDialog& dialog = GetGlobalHotkeysPlugin().GetGlobalHotkeysDialog();
+	if(parent)
+		dialog.SetDlgParent(FromHandle(parent));
+	dialog.DoModal();
+	dialog.SetDlgParent(NULL);
 }

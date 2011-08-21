@@ -27,9 +27,10 @@
 */
 #include <GlobalHotkeysImpl.h>
 #include "iTunesVisualAPI.h"
-//#include <cstdlib>
 #include <new>
 #include <limits>
+#include <cstring>
+#include <windows.h>
 #include <shlobj.h>
 
 /*
@@ -39,7 +40,7 @@ const char kTVisualPluginName[] = "Global Hotkeys - http://ighp.berlios.de";
 const OSType kTVisualPluginCreator = 'SCos';
 
 const UInt8 kTVisualPluginMajorVersion = 1;
-const UInt8 kTVisualPluginMinorVersion = 0; //2?
+const UInt8 kTVisualPluginMinorVersion = 0;
 const UInt8 kTVisualPluginReleaseStage = finalStage;
 const UInt8 kTVisualPluginNonFinalRelease = 0;
 
@@ -72,7 +73,7 @@ static const char* GetPluginsPath()
 	*/
 
 	static char path[MAX_PATH]; // path to plug-ins folder
-	ZeroMemory(path, sizeof(path));
+	path[0] = '\0';
 
 	strncpy_s(path, _countof(path), GetCommandLine(), _TRUNCATE);
 	strstr(path, "\\iTunes.exe")[0] = '\0';
@@ -84,7 +85,7 @@ static const char* GetPluginsPath()
 static const char* GetGlobalHotkeysImplDllFromProgramDir()
 {
 	static char path[MAX_PATH]; // path to GlobalHotkeysImpl.dll
-	ZeroMemory(path, sizeof(path));
+	path[0] = '\0';
 
 	strncpy_s(path, _countof(path), GetPluginsPath(), _TRUNCATE);
 	strcat_s(path, _countof(path), kGlobalHotkeysImpl);
@@ -95,14 +96,10 @@ static const char* GetGlobalHotkeysImplDllFromProgramDir()
 static const char* GetGlobalHotkeysImplDllFromUserDir()
 {
 	static char path[MAX_PATH];
-	OSVERSIONINFO osvi;
+	path[0] = '\0';
 
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
+	OSVERSIONINFO osvi = { sizeof(OSVERSIONINFO) };
 	GetVersionEx(&osvi);
-
-	ZeroMemory(path, sizeof(path));
 
 	if (osvi.dwMajorVersion > 5) {
 		// Vista and above
@@ -206,6 +203,7 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 				break;
 			}
 			visualPluginData->fnInitGlobalHotkeysPlugin();
+			visualPluginData->destPort = NULL;
 			break;
 		}
 
@@ -227,8 +225,9 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 			break;
 
 		case kVisualPluginConfigureMessage:
+			// get iTunes window as dialog parent
 			if(visualPluginData->fnShowSettingsDialog)
-				visualPluginData->fnShowSettingsDialog();
+				visualPluginData->fnShowSettingsDialog(NULL);
 			break;
 
 		/*
@@ -301,9 +300,7 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 */
 static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 {
-	PlayerMessageInfo playerMessageInfo;
-
-	memset(&playerMessageInfo.u.registerVisualPluginMessage, 0, sizeof(playerMessageInfo.u.registerVisualPluginMessage));
+	PlayerMessageInfo playerMessageInfo = { 0 };
 
 	// copy in name length byte first
 	playerMessageInfo.u.registerVisualPluginMessage.name[0] = strlen(kTVisualPluginName);
