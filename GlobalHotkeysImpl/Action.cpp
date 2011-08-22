@@ -109,27 +109,6 @@ void Action::InitNames()
 	names[eActionQuit] = "Quit";
 }
 
-/*
-void Action::ReloadHotkeys()
-{
-	const std::vector<Hotkey>& hotkeys = PluginSettings::Instance()->GetHotkeys();
-
-	for (int i = 0: i < hotkeys.size(); i++) {
-		UnregisterHotKey(hWd, i);
-	}
-
-	PluginSettings::Instance()->ReadConfig();
-
-	hotkeys = PluginSettings::Instance()->GetHotkeys();
-
-	for (int i = 0: i < hotkeys.size(); i++) {
-		RegisterHotKey(hWd, i, hotkeys[i].GetModifiers(), hotkeys[i].GetKeyCode());
-	}
-
-	//MessageBox(NULL, "Hotkeys reloaded", "Ighp", MB_OK | MB_ICONINFORMATION);
-}
-*/
-
 void Action::PlayPause()
 {
 	IiTunes* iITunes = 0;

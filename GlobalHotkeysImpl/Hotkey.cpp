@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  */
 
-#include <windows.h>
-
 #include "Hotkey.h"
-#include "Action.h"
+
+#include <windows.h>
+#include <commctrl.h>
 
 std::string Hotkey::toString() const
 {
@@ -31,17 +31,17 @@ std::string Hotkey::toString() const
 
 	//ctrl, shift, alt, win
 
-	if(m_modifiers & MOD_CONTROL)
+	if(m_modifiers & HOTKEYF_CONTROL)
 		hotkey_name += " + " + GetKeyName(VK_CONTROL);
 
-	if(m_modifiers & MOD_SHIFT)
+	if(m_modifiers & HOTKEYF_SHIFT)
 		hotkey_name += " + " + GetKeyName(VK_SHIFT);
 
-	if(m_modifiers & MOD_ALT)
-		hotkey_name += " + " + GetKeyName(VK_MENU);
+	if(m_modifiers & HOTKEYF_ALT)
+		hotkey_name += " + " + GetKeyName(VK_LMENU);
 
-	if(m_modifiers & MOD_WIN)
-		hotkey_name += " + " + GetKeyName(VK_LWIN); //VK_RWIN?
+	if(m_modifiers & HOTKEYF_EXT) // right ALT + CTRL
+		hotkey_name += " + " + GetKeyName(VK_RMENU); //VK_RWIN?
 
 	return hotkey_name;
 }

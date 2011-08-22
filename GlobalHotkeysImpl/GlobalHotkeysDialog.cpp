@@ -42,12 +42,18 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 
 BOOL GlobalHotkeysDialog::OnInitDialog()
 {
+	Action::InitNames();
+
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
 	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
 	m_applyButton.AttachDlgItem(IDAPPLY, this);
 
+	// Get a temporary copy
+	m_hotkeys = PluginSettings::Instance().GetHotkeys();
+	// Temporarily disable hotkeys
+	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
+
 	InitHotkeysListViewColumns();
-	m_listviewIndex = 0;
 	PopulateHotkeysList();
 	return TRUE;
 }
@@ -56,14 +62,12 @@ BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	switch(LOWORD(wParam))
     {
-	case IDC_ADD:
-		OnAdd();
+		return TRUE;
+	case IDC_SET:
+		OnSet();
 		return TRUE;
 	case IDC_CLEAR:
 		OnClear();
-		return TRUE;
-	case IDC_MODIFY:
-		OnModify();
 		return TRUE;
 	case IDAPPLY:
 		OnApply();
@@ -89,41 +93,39 @@ LRESULT GlobalHotkeysDialog::OnNotify(WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-void GlobalHotkeysDialog::OnAdd()
+void GlobalHotkeysDialog::OnSet()
 {
-	// get combo text
-	// if(exists in listview column 0)
-	//   set column 1
-	// else
-	//   add item
-	// 
+	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
+	Action::Type action = Action::Type(index + 1);
+
+	WORD wKeys = m_hotkeyInput.GetHotKey();
+	BYTE bKeyCode = LOBYTE(wKeys);
+	BYTE bModifiers = HIBYTE(wKeys);
+	Hotkey hotkey(bKeyCode, bModifiers);
+
+	m_hotkeysListView.SetItemText(index, 1, hotkey.toString().c_str());
+	m_hotkeys[action] = hotkey;
 
 	m_applyButton.EnableWindow(true);
 }
 
 void GlobalHotkeysDialog::OnClear()
 {
-	// get combo text
-	// if(exists in listview column 0)
-	//   delete
-	// 
+	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
+	Action::Type action = Action::Type(index + 1);
+	m_hotkeys[action] = Hotkey(); // set empty
 
-	m_applyButton.EnableWindow(true);
-}
+	m_hotkeyInput.SetHotKey(0, 0);
+	m_hotkeysListView.SetItemText(index, 1, "");
 
-void GlobalHotkeysDialog::OnModify()
-{
-	// get combo text
-	// if(exists in listview column 0)
-	//   set column 1
-	//   
 	m_applyButton.EnableWindow(true);
 }
 
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
-	//ReloadHotkeys();
+	// Enable hotkeys again
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(m_hotkeys);
 	CDialog::OnOK();
 }
 
@@ -134,15 +136,9 @@ void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
 
 void GlobalHotkeysDialog::OnApply()
 {
-	std::map<Action::Type, Hotkey> hotkeys = PluginSettings::Instance().GetHotkeys();
-
-	// get listview items
-	// edit hotkeys accordingly
-
-	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
-	GlobalHotkeysPlugin::Instance().RegisterHotkeys(hotkeys);
-	//PluginSettings::Instance()->SetHotkeys(hotkeys);
-	//PluginSettings::Instance().WriteConfig();
+	// save our internal hotkeys
+	PluginSettings::Instance().SetHotkeys(m_hotkeys);
+	PluginSettings::Instance().WriteConfig();
 
 	m_applyButton.EnableWindow(false);
 }
@@ -159,10 +155,8 @@ void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 
 void GlobalHotkeysDialog::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
 {
-	m_hotkeysListView.InsertItem(m_listviewIndex, action.c_str());
-	m_hotkeysListView.SetItemText(m_listviewIndex, 1, hotkey.c_str());
-
-	m_listviewIndex++;
+	int index = m_hotkeysListView.InsertItem(m_hotkeysListView.GetItemCount(), action.c_str());
+	m_hotkeysListView.SetItemText(index, 1, hotkey.c_str());
 }
 
 void GlobalHotkeysDialog::PopulateHotkeysList()
@@ -182,54 +176,13 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
-/*
-void GlobalHotkeysDialog::PopulateActionsComboBox()
-{
-
-	std::map<Action::Type, std::string>::const_iterator iter;
-	for (iter = Action::names.begin(); iter !=  Action::names.end(); iter++) {
-		m_actionsComboBox.AddString(iter->first.c_str());
-	}
-}
-
-//unused
-void GlobalHotkeysDialog::OnSelectedActionChanged()
-{
-	CString textCombo = m_actionsComboBox.GetWindowText();
-	if(textCombo.GetLength() == 0)
-		return;
-
-	LVFINDINFO lfi;
-	ZeroMemory(&lfi, sizeof(LVFINDINFO));
-
-	lfi.flags = LVFI_STRING;
-	lfi.psz = textCombo.c_str();
-
-	int index = m_hotkeysListView.FindItem(lfi);
-	if (-1 == index) {
-		m_hotkeysListView.SetItemState(index, 0, LVIS_SELECTED);
-		//m_hotkeyTextEdit.SetWindowText(textCombo.c_str());
-		return;
-	}
-
-	m_hotkeysListView.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
-	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
-	//m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
-}
-*/
-
 void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 {
-	if ((lpStateChange->uOldState & LVIS_SELECTED) || !(lpStateChange->uNewState & LVIS_SELECTED))
+	if((lpStateChange->uOldState & LVIS_SELECTED) || !(lpStateChange->uNewState & LVIS_SELECTED))
 		return;
 
-	int index = lpStateChange->iItem;
-	std::string textAction = m_hotkeysListView.GetItemText(index, 0);
+	Action::Type action = Action::Type(lpStateChange->iItem + 1);
+	Hotkey hotkey = m_hotkeys[action];
 
-	//int cbItemIndex = m_actionsComboBox.FindStringExact(-1, textAction.c_str());
-	//m_actionsComboBox.SetCurSel(cbItemIndex);
-
-	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
-	//m_hotkeyInput.SetHotKey();
-	//m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
+	m_hotkeyInput.SetHotKey(hotkey.GetKeyCode(), hotkey.GetModifiers());
 }

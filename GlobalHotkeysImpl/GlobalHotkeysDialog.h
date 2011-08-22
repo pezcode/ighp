@@ -31,6 +31,9 @@
 #include <Win32++\listview.h>
 #include "resource.h"
 
+#include "Action.h"
+#include "Hotkey.h"
+
 class CHotkey : public CWnd
 {
 public:
@@ -70,17 +73,14 @@ protected:
 	virtual void EndDialog(INT_PTR nResult);
 
 private:
-	//CComboBox m_actionsComboBox;
 	CListView m_hotkeysListView;
 	CHotkey m_hotkeyInput;
-
 	CButton m_applyButton;
 
-	int m_listviewIndex;
+	std::map<Action::Type, Hotkey> m_hotkeys; // temporary copy
 
-	void OnAdd();
+	void OnSet();
 	void OnClear();
-	void OnModify();
 
 	void OnApply();
 

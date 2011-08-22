@@ -23,8 +23,6 @@
 #include "PluginSettings.h" 
 #include "GlobalHotkeysPlugin.h" 
 
-#include <windows.h>
-
 PluginSettings PluginSettings::ms_instance;
 
 PluginSettings::PluginSettings()
@@ -42,9 +40,11 @@ bool PluginSettings::ReadConfig()
 {
 	m_hotkeys.clear();
 
+	// Version check
 	int version = 0;
 	UInt32 size = sizeof(version);
-	if(noErr == PlayerGetPluginNamedData(appCookie, appProc, (ConstStringPtr)"Version", &version, size, &size))
+	OSStatus res = PlayerGetPluginNamedData(appCookie, appProc, (ConstStringPtr)"Version", &version, size, &size);
+	if(res == noErr && size == sizeof(version))
 	{
 		if(version > GlobalHotkeysPlugin::version)
 		{
@@ -59,18 +59,15 @@ bool PluginSettings::ReadConfig()
 	{
 		Action::Type action_code = iter->first;
 		ConstStringPtr action_name = (ConstStringPtr)iter->second.c_str();
-		WORD keys = 0;
+		UInt16 keys = 0;
 		UInt32 size = sizeof(keys);
+		Hotkey hotkey; // Default is empty
 		OSStatus res = PlayerGetPluginNamedData(appCookie, appProc, action_name, &keys, size, &size);
 		if(res == noErr && size == sizeof(keys))
 		{
-			// Set hotkey for that action
-			m_hotkeys[action_code] = Hotkey(LOBYTE(keys), HIBYTE(keys));
+			hotkey = Hotkey(keys & 0xFF, (keys >> 8) & 0xFF);
 		}
-		else
-		{
-			m_hotkeys[action_code] = Hotkey();
-		}
+		m_hotkeys[action_code] = hotkey; // Set hotkey for that action
 	}
 	return true;
 }
@@ -87,7 +84,7 @@ bool PluginSettings::WriteConfig()
 		ConstStringPtr action_name = (ConstStringPtr)iter->second.c_str();
 		// Get hotkey for that action
 		Hotkey hotkey = m_hotkeys[action_code]; // creates an empty hotkey if none exists
-		UInt16 keys = MAKEWORD(hotkey.GetKeyCode(), hotkey.GetModifiers());
+		UInt16 keys = (hotkey.GetKeyCode() & 0xFF) | ((hotkey.GetModifiers() & 0xFF) << 8);
 		PlayerSetPluginNamedData(appCookie, appProc, action_name, &keys, sizeof(keys));
 	}
 	return true;	

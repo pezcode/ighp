@@ -131,8 +131,8 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			messageInfo->u.initMessage.refCon = (void*)visualPluginData;
 
 			PluginSettings::Instance().SetiTunesData(visualPluginData->appCookie, visualPluginData->appProc);
-			PluginSettings::Instance().ReadConfig();
-			globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+			//PluginSettings::Instance().ReadConfig();
+			//globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
 			break;
 		}
 
@@ -141,8 +141,8 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 		*/		
 		case kVisualPluginCleanupMessage:
 			delete visualPluginData;
-			PluginSettings::Instance().WriteConfig();
-			globalHotkeysPlugin->UnregisterHotkeys();
+			//PluginSettings::Instance().WriteConfig();
+			//globalHotkeysPlugin->UnregisterHotkeys();
 			break;
 
 		/*
@@ -273,7 +273,6 @@ extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, Plugi
 			break;
 
 		case kPluginCleanupMessage:
-			status = noErr;
 			break;
 
 		default:
@@ -289,7 +288,7 @@ extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, Plugi
 */
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-	switch (fdwReason)
+	switch(fdwReason)
 	{
 		case DLL_PROCESS_ATTACH:
 			//dllHandle = hinstDLL;

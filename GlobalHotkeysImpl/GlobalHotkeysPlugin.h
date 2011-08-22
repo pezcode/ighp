@@ -45,7 +45,6 @@ protected:
 	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual void PreRegisterClass(WNDCLASS &wc);
 	virtual void PreCreate(CREATESTRUCT &cs);
-	virtual void OnCreate();
 
 private:
 	void OnHotkey(WPARAM wParam, LPARAM lParam);
@@ -61,7 +60,6 @@ public:
 	static GlobalHotkeysPlugin& Instance() { return *((GlobalHotkeysPlugin*)GetApp()); }
 
 	GlobalHotkeysDialog& GetSettingsDialog() { return m_settingsDialog; }
-	//GlobalHotkeysWnd& GetHotkeyWindow() const { return m_mainWindow; }
 
 	bool UnregisterHotkeys();
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
@@ -69,15 +67,13 @@ public:
 	const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
 
 	static const int version = 10;
-	static const char version_str[];
+	//static const char version_str[];
 
 private:
 	GlobalHotkeysWnd m_mainWindow;
 	GlobalHotkeysDialog m_settingsDialog;
 
 	std::vector<Action> m_hotkeys;
-
-	int n_hotkeys;
 };
 
 #endif /* GLOBAL_HOTKEYS_PLUGIN_H */

@@ -23,13 +23,12 @@
 #ifndef PLUGIN_SETTINGS_H
 #define PLUGIN_SETTINGS_H
 
-#include <string>
-#include <map>
+#include "iTunesAPI.h"
 
 #include "Hotkey.h"
 #include "Action.h"
 
-#include "iTunesAPI.h"
+#include <map>
 
 class PluginSettings
 {
@@ -37,7 +36,7 @@ public:
 	static PluginSettings& Instance() { return ms_instance; }
 
 	const std::map<Action::Type, Hotkey>& GetHotkeys() const { return m_hotkeys; }
-	//void SetHotkeys(const std::map<Action::Type, Hotkey>& hotkeys) { m_hotkeys = hotkeys; }
+	void SetHotkeys(const std::map<Action::Type, Hotkey>& hotkeys) { m_hotkeys = hotkeys; }
 
 	void SetiTunesData(void* appCookie, ITAppProcPtr appProc);
 
