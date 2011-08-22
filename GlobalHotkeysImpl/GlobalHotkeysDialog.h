@@ -23,7 +23,6 @@
 #ifndef GLOBAL_HOTKEYS_DIALOG_H
 #define GLOBAL_HOTKEYS_DIALOG_H
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <Win32++\dialog.h>
@@ -71,7 +70,7 @@ protected:
 	virtual void EndDialog(INT_PTR nResult);
 
 private:
-	CComboBox m_actionsComboBox;
+	//CComboBox m_actionsComboBox;
 	CListView m_hotkeysListView;
 	CHotkey m_hotkeyInput;
 
@@ -87,13 +86,13 @@ private:
 
 	void InitHotkeysListViewColumns();
 	void PopulateHotkeysList();
-	void PopulateActionsComboBox();
+	//void PopulateActionsComboBox();
 
 	void CreateHotkeyControl();
 
-	void AddHotkeyListItem(const std::string action, const std::string hotkey);
+	void AddHotkeyListItem(const std::string& action, const std::string& hotkey);
 
-	void OnSelectedActionChanged();
+	//void OnSelectedActionChanged();
 	void OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange);
 
 };

@@ -5,7 +5,6 @@
 #define IDD_GH_DIALOG                   101
 #define IDAPPLY                         1001
 #define IDC_HOTKEYS_LIST                1002
-#define IDC_ACTIONS_COMBO               1003
 #define IDC_MODIFY                      1005
 #define IDC_CLEAR                       1006
 #define IDC_ADD                         1007

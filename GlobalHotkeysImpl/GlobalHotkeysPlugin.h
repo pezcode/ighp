@@ -23,13 +23,17 @@
 #ifndef GLOBAL_HOTKEYS_PLUGIN_H
 #define GLOBAL_HOTKEYS_PLUGIN_H
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include <Win32++\WinCore.h>
 #include "resource.h"
 
 #include "GlobalHotkeysDialog.h"
+
+#include "Action.h"
+#include "Hotkey.h"
+
+#include <vector>
 
 class GlobalHotkeysWnd : public CWnd
 {
@@ -41,29 +45,39 @@ protected:
 	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual void PreRegisterClass(WNDCLASS &wc);
 	virtual void PreCreate(CREATESTRUCT &cs);
+	virtual void OnCreate();
 
 private:
-	void OnCreate(HWND hWnd);
 	void OnHotkey(WPARAM wParam, LPARAM lParam);
-	void OnDestroy(HWND hWnd);
-
+	void OnDestroy();
 };
 
 class GlobalHotkeysPlugin : public CWinApp
 {
 public:
-	explicit GlobalHotkeysPlugin(); 
+	explicit GlobalHotkeysPlugin(HINSTANCE dllHandle); 
 	virtual ~GlobalHotkeysPlugin();
 
-	GlobalHotkeysDialog& GetGlobalHotkeysDialog() {return m_settingsDialog;}
+	static GlobalHotkeysPlugin& Instance() { return *((GlobalHotkeysPlugin*)GetApp()); }
+
+	GlobalHotkeysDialog& GetSettingsDialog() { return m_settingsDialog; }
+	//GlobalHotkeysWnd& GetHotkeyWindow() const { return m_mainWindow; }
+
+	bool UnregisterHotkeys();
+	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
+
+	const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
+
+	static const int version = 10;
+	static const char version_str[];
 
 private:
 	GlobalHotkeysWnd m_mainWindow;
 	GlobalHotkeysDialog m_settingsDialog;
 
-};
+	std::vector<Action> m_hotkeys;
 
-// returns a reference to the GlobalHotkeysPlugin object
-inline GlobalHotkeysPlugin& GetGlobalHotkeysPlugin() { return *((GlobalHotkeysPlugin*)GetApp()); }
+	int n_hotkeys;
+};
 
 #endif /* GLOBAL_HOTKEYS_PLUGIN_H */

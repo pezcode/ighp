@@ -20,54 +20,69 @@
  * THE SOFTWARE.
  */
 
-#ifndef HOTKEYS_H
-#define HOTKEYS_H
+#ifndef ACTION_H
+#define ACTION_H
 
 #include <string>
 #include <map>
 
-extern std::map<const std::string, unsigned int> hotkeysMap;
-
-void InitHotkeysMap();
-
-class Hotkey
+class Action
 {
 public:
-	explicit Hotkey() : Action(0), key(0), alt(false), control(false), shift(false), win(false) { };
-	explicit Hotkey(const std::string action_name, const std::string key_name, const std::string alt_str, 
-		const std::string control_str, const std::string shift_str, const std::string win_str);
-	~Hotkey();
+	enum Type
+	{
+		eActionNotDefined,
+		eActionPlayPause,
+		eActionNextTrack,
+		eActionPreviousTrack,
+		eActionRandom,
+		eActionRepeat,
+		eActionSongRatingClear,
+		eActionSongRating1,
+		eActionSongRating2,
+		eActionSongRating3,
+		eActionSongRating4,
+		eActionSongRating5,
+		eActionShowHide,
+		eActionVolumeUp,
+		eActionVolumeDown,
+		eActionToggleMute,
+		eActionQuit
+	};
 
-	inline unsigned int GetKeyCode() { return key_code; };
+	Action(Type type = eActionNotDefined) : m_type(type) { }
 
-	inline bool GetAlt() { return alt; };
-	inline bool GetControl() { return control; };
-	inline bool GetShift() { return shift; };
-	inline bool GetWin() { return win; };
+	void Perform() const;
 
-	inline const std::string GetActionName() { return action; };
-	const std::string GetHotkeyName();
+	static void InitNames();
 
-	void PerformAction();	
-
-	const std::string ToXmlString();
+public:
+	static std::map<Type, std::string> names;
 
 private:
-	// int id;
-	unsigned int key_code;
-	bool alt;
-	bool control;
-	bool shift;
-	bool win;
+	Type m_type;
 
-	std::string action;
-	std::string key;
+	// Helpers
+	static void RateSong(unsigned int rating);
+	static void ToggleVolume(long step);
 
-	void (*Action)(void);
-
-	void (*GetAction(const std::string action_name))(void);
-	unsigned int GetKeyCode(const std::string key_name);
-	bool IsKeyUsed(const std::string key_str);
+	// Actions
+	static void PlayPause();
+	static void NextTrack();
+	static void PreviousTrack();
+	static void Random();
+	static void Repeat();
+	static void ClearSongRating();
+	static void SongRating1();
+	static void SongRating2();
+	static void SongRating3();
+	static void SongRating4();
+	static void SongRating5();
+	static void ShowHide();
+	static void VolumeUp();
+	static void VolumeDown();
+	static void ToggleMute();
+	static void Quit();
 };
 
-#endif /* HOTKEYS_H */
+#endif /* ACTION_H */

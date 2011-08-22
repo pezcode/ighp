@@ -25,13 +25,17 @@
 /*
 	includes
 */
-#include <GlobalHotkeysImpl.h>
-#include "iTunesVisualAPI.h"
 #include <new>
 #include <limits>
 #include <cstring>
+
 #include <windows.h>
 #include <shlobj.h>
+
+#include "iTunesVisualAPI.h"
+
+#include "PluginSettings.h" 
+#include "GlobalHotkeysPlugin.h"
 
 /*
 	typedef's, struct's, enum's, etc.
@@ -44,7 +48,8 @@ const UInt8 kTVisualPluginMinorVersion = 0;
 const UInt8 kTVisualPluginReleaseStage = finalStage;
 const UInt8 kTVisualPluginNonFinalRelease = 0;
 
-const char kGlobalHotkeysImpl[] = "GlobalHotkeysImpl.dll";
+static GlobalHotkeysPlugin* globalHotkeysPlugin = 0;
+//static HINSTANCE dllHandle = 0;
 
 struct VisualPluginData
 {
@@ -54,93 +59,7 @@ struct VisualPluginData
 
 	GRAPHICS_DEVICE destPort;
 	Rect destRect;
-
-	HMODULE hDLL; // GlobalHotkeysImpl DLL handle
-	DLL_Function_InitGlobalHotkeysPlugin fnInitGlobalHotkeysPlugin;
-	DLL_Function_ReleaseGlobalHotkeysPlugin fnReleaseGlobalHotkeysPlugin;
-	DLL_Function_ShowSettingsDialog fnShowSettingsDialog;
 };
-
-/*
-	local (static) functions
-*/
-static const char* GetPluginsPath()
-{
-	/*
-	ITFileSpec filespec;
-	PlayerGetPluginITFileSpec(x, y, &filespec);
-	filespec.fullPath; // unicode;
-	*/
-
-	static char path[MAX_PATH]; // path to plug-ins folder
-	path[0] = '\0';
-
-	strncpy_s(path, _countof(path), GetCommandLine(), _TRUNCATE);
-	strstr(path, "\\iTunes.exe")[0] = '\0';
-	strcat_s(path, _countof(path), "\\Plug-ins\\");
-
-	return path + 1;
-}
-
-static const char* GetGlobalHotkeysImplDllFromProgramDir()
-{
-	static char path[MAX_PATH]; // path to GlobalHotkeysImpl.dll
-	path[0] = '\0';
-
-	strncpy_s(path, _countof(path), GetPluginsPath(), _TRUNCATE);
-	strcat_s(path, _countof(path), kGlobalHotkeysImpl);
-
-	return path;
-}
-
-static const char* GetGlobalHotkeysImplDllFromUserDir()
-{
-	static char path[MAX_PATH];
-	path[0] = '\0';
-
-	OSVERSIONINFO osvi = { sizeof(OSVERSIONINFO) };
-	GetVersionEx(&osvi);
-
-	if (osvi.dwMajorVersion > 5) {
-		// Vista and above
-		SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, path);
-		strcat_s(path, _countof(path), "\\Apple Computer");
-	} else {
-		// XP and 2000
-		SHGetFolderPath(NULL, CSIDL_MYMUSIC, NULL, 0, path);
-	}
-
-	strcat_s(path, _countof(path), "\\iTunes\\iTunes Plug-ins\\");
-	strcat_s(path, _countof(path), kGlobalHotkeysImpl);
-
-	return path;
-}
-
-static bool LoadGlobalHotkeysImplDll(VisualPluginData* visualPluginData)
-{
-	visualPluginData->hDLL = NULL;
-	visualPluginData->fnInitGlobalHotkeysPlugin = NULL;
-	visualPluginData->fnReleaseGlobalHotkeysPlugin = NULL;
-
-	HINSTANCE hDLL = LoadLibrary(GetGlobalHotkeysImplDllFromUserDir());
-	if(!hDLL)
-	{
-		hDLL = LoadLibrary(GetGlobalHotkeysImplDllFromProgramDir());
-		if(!hDLL)
-		{
-			MessageBox(NULL, "Could not load GlobalHotkeysImpl.dll", "Global Hotkeys", MB_OK | MB_ICONERROR);
-			return false;
-		}
-	}
-
-	visualPluginData->hDLL = hDLL;
-
-	visualPluginData->fnInitGlobalHotkeysPlugin = (DLL_Function_InitGlobalHotkeysPlugin)GetProcAddress(hDLL, "InitGlobalHotkeysPlugin");
-	visualPluginData->fnReleaseGlobalHotkeysPlugin = (DLL_Function_ReleaseGlobalHotkeysPlugin)GetProcAddress(hDLL, "ReleaseGlobalHotkeysPlugin");
-	visualPluginData->fnShowSettingsDialog = (DLL_Function_ShowSettingsDialog)GetProcAddress(hDLL, "ShowSettingsDialog");
-
-	return (visualPluginData->fnInitGlobalHotkeysPlugin && visualPluginData->fnReleaseGlobalHotkeysPlugin);
-}
 
 /*
 	RenderVisualPort
@@ -157,7 +76,6 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 	srcRect.right = destRect->right;
 	srcRect.bottom = destRect->bottom;
 
-	//GetClientRect(destPort, &srcRect);
 	HDC hdc = GetDC(destPort);		
 	HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
 	FillRect(hdc, &srcRect, hBrush);
@@ -167,14 +85,28 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 }
 
 /*
+	ShowSettingsDialog
+*/
+void ShowSettingsDialog(HWND parent)
+{
+	// new dialog...
+	// we should be doing synchronization here though
+	GlobalHotkeysDialog& dialog = globalHotkeysPlugin->GetSettingsDialog();
+	if(parent)
+		dialog.SetDlgParent(FromHandle(parent));
+	dialog.DoModal();
+	dialog.SetDlgParent(NULL);
+}
+
+/*
 	VisualPluginHandler
 */
-static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *messageInfo,void *refCon)
+static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* messageInfo, void* refCon)
 {
 	VisualPluginData* visualPluginData = (VisualPluginData*)refCon;
 	OSStatus status = noErr;
 
-	switch (message)
+	switch(message)
 	{
 		/*
 			Sent when the visual plugin is registered.  The plugin should do minimal
@@ -194,16 +126,13 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 
 			visualPluginData->appCookie	= messageInfo->u.initMessage.appCookie;
 			visualPluginData->appProc	= messageInfo->u.initMessage.appProc;
+			visualPluginData->destPort = NULL;
 
 			messageInfo->u.initMessage.refCon = (void*)visualPluginData;
 
-			if(!LoadGlobalHotkeysImplDll(visualPluginData))
-			{
-				status = eofErr; //??
-				break;
-			}
-			visualPluginData->fnInitGlobalHotkeysPlugin();
-			visualPluginData->destPort = NULL;
+			PluginSettings::Instance().SetiTunesData(visualPluginData->appCookie, visualPluginData->appProc);
+			PluginSettings::Instance().ReadConfig();
+			globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
 			break;
 		}
 
@@ -211,9 +140,9 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 			Sent when the visual plugin is unloaded
 		*/		
 		case kVisualPluginCleanupMessage:
-			visualPluginData->fnReleaseGlobalHotkeysPlugin();
-			FreeLibrary(visualPluginData->hDLL);
 			delete visualPluginData;
+			PluginSettings::Instance().WriteConfig();
+			globalHotkeysPlugin->UnregisterHotkeys();
 			break;
 
 		/*
@@ -226,8 +155,7 @@ static OSStatus VisualPluginHandler(OSType message,VisualPluginMessageInfo *mess
 
 		case kVisualPluginConfigureMessage:
 			// get iTunes window as dialog parent
-			if(visualPluginData->fnShowSettingsDialog)
-				visualPluginData->fnShowSettingsDialog(NULL);
+			ShowSettingsDialog(NULL);
 			break;
 
 		/*
@@ -330,7 +258,7 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 }
 
 /*
-	main entrypoint
+	iTunes entrypoint
 */
 extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, PluginMessageInfo* messageInfo, void* refCon)
 {
@@ -354,4 +282,27 @@ extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, Plugi
 	}
 	
 	return status;
+}
+
+/*
+	Window entrypoint
+*/
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	switch (fdwReason)
+	{
+		case DLL_PROCESS_ATTACH:
+			//dllHandle = hinstDLL;
+			globalHotkeysPlugin = new GlobalHotkeysPlugin(hinstDLL);
+			break;
+		case DLL_PROCESS_DETACH:
+			delete globalHotkeysPlugin;
+			globalHotkeysPlugin = 0;
+			break;
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
+			break;
+	}
+
+	return true;
 }

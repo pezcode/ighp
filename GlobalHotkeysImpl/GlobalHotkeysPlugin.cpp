@@ -23,20 +23,23 @@
 #include "GlobalHotkeysPlugin.h"
 #include "PluginSettings.h"
 
-extern HANDLE dllHandle;
+//HWND hWd = 0;
 
-HWND hWd = 0;
+const char GlobalHotkeysPlugin::version_str[] = "0.1.0";
 
-GlobalHotkeysPlugin::GlobalHotkeysPlugin() 
-	: m_mainWindow(), m_settingsDialog(IDD_GH_DIALOG)
+GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_mainWindow(), m_settingsDialog(IDD_GH_DIALOG)
 {
-	SetResourceHandle((HINSTANCE)dllHandle);
+	SetResourceHandle(dllHandle);
 	
 	m_mainWindow.Create();
+
+	n_hotkeys = 0;
 }
 
 GlobalHotkeysPlugin::~GlobalHotkeysPlugin()
 {
+	UnregisterHotkeys();
+
 	m_mainWindow.Destroy();
 
 	::PostQuitMessage(0);
@@ -76,13 +79,13 @@ LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch (uMsg)
 	{
 	case WM_CREATE:
-		OnCreate(m_hWnd);
+		OnCreate();
 		break;
 	case WM_HOTKEY:
 		OnHotkey(wParam, lParam);
 		break;
 	case WM_DESTROY:
-		OnDestroy(m_hWnd);
+		OnDestroy();
 		break;
 	}
 
@@ -90,24 +93,19 @@ LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return WndProcDefault(uMsg, wParam, lParam);
 }
 
-
 //
 // Register global hotkeys
 //
-void GlobalHotkeysWnd::OnCreate(HWND hWnd)
+void GlobalHotkeysWnd::OnCreate()
 {
-	hWd = hWnd;
-
+	/*
 	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
-	std::map<const unsigned int, Hotkey*>::iterator iter;
+	std::map<const unsigned int, Hotkey*>::const_iterator iter;
 
 	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
-		unsigned int modifiers = (iter->second->GetAlt() ? MOD_ALT : 0) | 
-			                     (iter->second->GetControl() ? MOD_CONTROL : 0) | 
-			                     (iter->second->GetShift() ? MOD_SHIFT : 0) | 
-			                     (iter->second->GetWin() ? MOD_WIN : 0);
-		RegisterHotKey(hWnd, iter->first, modifiers, iter->second->GetKeyCode());
+		RegisterHotKey(m_hWnd, iter->first, iter->second->GetModifiers(), iter->second->GetKeyCode());
 	}
+	}*/
 }
 
 //
@@ -115,22 +113,54 @@ void GlobalHotkeysWnd::OnCreate(HWND hWnd)
 //
 void GlobalHotkeysWnd::OnHotkey(WPARAM wParam, LPARAM lParam)
 {
-	std::map<const unsigned int, Hotkey*>& hotkeys = *PluginSettings::Instance()->GetHotkeys();
-	hotkeys[wParam]->PerformAction();
+	const std::vector<Action>& hotkeys = GlobalHotkeysPlugin::Instance().GetHotKeys();
+	if(wParam >= 0 && wParam < hotkeys.size())
+	{
+		hotkeys[wParam].Perform();
+	}
 }
 
 //
 // Unregister global hotkeys
 //
-void GlobalHotkeysWnd::OnDestroy(HWND hWnd)
+void GlobalHotkeysWnd::OnDestroy()
 {
+	/*
 	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
 	std::map<const unsigned int, Hotkey*>::iterator iter;
 
 	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
-		UnregisterHotKey(hWnd, iter->first);
+		UnregisterHotKey(m_hWnd, iter->first);
 		delete iter->second;
 		iter->second = 0;
 	}
+	*/
 }
 
+bool GlobalHotkeysPlugin::UnregisterHotkeys()
+{
+	for(int i = 0; i < m_hotkeys.size(); i++)
+	{
+		UnregisterHotKey(m_mainWindow.GetHwnd(), i);
+	}
+	m_hotkeys.clear();
+	return true;
+}
+
+bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys)
+{
+	UnregisterHotkeys();
+
+	std::map<Action::Type, Hotkey>::const_iterator iter;
+	for(iter = hotkeys.begin(); iter != hotkeys.end(); iter++)
+	{
+		Hotkey hotkey = iter->second;
+		if(!hotkey.IsEmpty())
+		{
+			Action::Type action = iter->first;
+			RegisterHotKey(m_mainWindow.GetHwnd(), m_hotkeys.size(), hotkey.GetModifiers(), hotkey.GetKeyCode());
+			m_hotkeys.push_back(Action(action));
+		}
+	}
+	return true;
+}

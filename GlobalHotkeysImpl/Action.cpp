@@ -20,99 +20,117 @@
  * THE SOFTWARE.
  */
 
-#include "Actions.h"
-
-#define WIN32_LEAN_AND_MEAN
+#include "Action.h"
 
 #include <windows.h>
 #include <comutil.h>
 
 #include "iTunesCOMInterface.h"
-#include "GlobalHotkeysPlugin.h"
 
-#include "PluginSettings.h" 
-#include "Hotkeys.h"
+std::map<Action::Type, std::string> Action::names;
 
-extern HWND hWd;
-
-std::map<const std::string, Actions> actionsMap = std::map<const std::string, Actions>();
-
-void InitActionsMap()
+void Action::Perform() const
 {
-	actionsMap["ReloadHotkeys"] = eActionReloadHotkeys;
-	actionsMap["OpenSettingsFile"] = eActionOpenSettingsFile;
-	actionsMap["OpenSettingsDialog"] = eActionOpenSettingsDialog;
-	actionsMap["PlayPause"] = eActionPlayPause;
-	actionsMap["NextTrack"] = eActionNextTrack;
-	actionsMap["PreviousTrack"] = eActionPreviousTrack;
-	actionsMap["ToggleRandom"] = eActionRandom;
-	actionsMap["ToggleRepeat"] = eActionRepeat;
-	actionsMap["SongRatingClear"] = eActionSongRatingClear;
-	actionsMap["SongRating1"] = eActionSongRating1;
-	actionsMap["SongRating2"] = eActionSongRating2;
-	actionsMap["SongRating3"] = eActionSongRating3;
-	actionsMap["SongRating4"] = eActionSongRating4;
-	actionsMap["SongRating5"] = eActionSongRating5;
-	actionsMap["ShowHide"] = eActionShowHide;
-	actionsMap["VolumeUp"] = eActionVolumeUp;
-	actionsMap["VolumeDown"] = eActionVolumeDown;
-	actionsMap["ToggleMute"] = eActionToggleMute;
-	actionsMap["Quit"] = eActionQuit;
+	switch(m_type)
+	{
+	case eActionPlayPause:
+		PlayPause();
+		break;
+	case eActionPreviousTrack:
+		PreviousTrack();
+		break;
+	case eActionNextTrack:
+		NextTrack();
+		break;
+	case eActionRandom:
+		Random();
+		break;
+	case eActionRepeat:
+		Repeat();
+		break;
+	case eActionSongRatingClear:
+		ClearSongRating();
+		break;
+	case eActionSongRating1:
+		SongRating1();
+		break;
+	case eActionSongRating2:
+		SongRating2();
+		break;
+	case eActionSongRating3:
+		SongRating3();
+		break;
+	case eActionSongRating4:
+		SongRating4();
+		break;
+	case eActionSongRating5:
+		SongRating5();
+		break;
+	case eActionShowHide:
+		ShowHide();
+		break;
+	case eActionVolumeUp:
+		VolumeUp();
+		break;
+	case eActionVolumeDown:
+		VolumeDown();
+		break;
+	case eActionToggleMute:
+		ToggleMute();
+		break;
+	case eActionQuit:
+		Quit();
+		break;
+	default:
+		break;
+	}
 }
 
-void ReloadHotkeys()
+void Action::InitNames()
 {
-	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
-	std::map<const unsigned int, Hotkey*>::iterator iter;
-
-	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
-		UnregisterHotKey(hWd, iter->first);
-		delete iter->second;
-		iter->second = 0;
-	}
-
-	PluginSettings::Instance()->ReadConfigFile(PluginSettings::Instance()->GetHotkeys());
-
-	hotkeys = PluginSettings::Instance()->GetHotkeys();
-	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
-		unsigned int modifiers = (iter->second->GetAlt() ? MOD_ALT : 0) | 
-			                     (iter->second->GetControl() ? MOD_CONTROL : 0) | 
-			                     (iter->second->GetShift() ? MOD_SHIFT : 0) | 
-			                     (iter->second->GetWin() ? MOD_WIN : 0);
-		RegisterHotKey(hWd, iter->first, modifiers, iter->second->GetKeyCode());
-	}
-
-	MessageBox(NULL, "Hotkeys reloaded", "Ighp", MB_OK | MB_ICONINFORMATION);
-}
-
-void OpenSettingsFile()
-{
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-
-	ZeroMemory( &si, sizeof(si) );
-	si.cb = sizeof(si);
-	ZeroMemory( &pi, sizeof(pi) );
-
-	std::string configFilePath = std::string("");
-	if (!(PluginSettings::Instance()->GetConfigFile(&configFilePath)))
+	if(names.size() != 0)
 		return;
 
-	char params[MAX_PATH];
-	ZeroMemory(params, sizeof(params));
-
-	strncpy_s(params, MAX_PATH, "notepad.exe ", _TRUNCATE);
-	strcat_s(params, MAX_PATH, configFilePath.c_str());
-
-	CreateProcess(NULL, params, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi); 
+	names[eActionPlayPause] = "PlayPause";
+	names[eActionNextTrack] = "NextTrack";
+	names[eActionPreviousTrack] = "PreviousTrack";
+	names[eActionRandom] = "ToggleRandom";
+	names[eActionRepeat] = "ToggleRepeat";
+	names[eActionSongRatingClear] = "SongRatingClear";
+	names[eActionSongRating1] = "SongRating1";
+	names[eActionSongRating2] = "SongRating2";
+	names[eActionSongRating3] = "SongRating3";
+	names[eActionSongRating4] = "SongRating4";
+	names[eActionSongRating5] = "SongRating5";
+	names[eActionShowHide] = "ShowHide";
+	names[eActionVolumeUp] = "VolumeUp";
+	names[eActionVolumeDown] = "VolumeDown";
+	names[eActionToggleMute] = "ToggleMute";
+	names[eActionQuit] = "Quit";
 }
 
-void OpenSettingsDialog()
+/*
+void Action::ReloadHotkeys()
 {
-	GetGlobalHotkeysPlugin().GetGlobalHotkeysDialog().DoModal();
-}
+	const std::vector<Hotkey>& hotkeys = PluginSettings::Instance()->GetHotkeys();
 
-void PlayPause()
+	for (int i = 0: i < hotkeys.size(); i++) {
+		UnregisterHotKey(hWd, i);
+	}
+
+	PluginSettings::Instance()->ReadConfig();
+
+	hotkeys = PluginSettings::Instance()->GetHotkeys();
+
+	for (int i = 0: i < hotkeys.size(); i++) {
+		RegisterHotKey(hWd, i, hotkeys[i].GetModifiers(), hotkeys[i].GetKeyCode());
+	}
+
+	//MessageBox(NULL, "Hotkeys reloaded", "Ighp", MB_OK | MB_ICONINFORMATION);
+}
+*/
+
+void Action::PlayPause()
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;
@@ -130,7 +148,7 @@ void PlayPause()
 	CoUninitialize();
 }
 
-void NextTrack()
+void Action::NextTrack()
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;
@@ -149,7 +167,7 @@ void NextTrack()
 
 }
 
-void PreviousTrack()
+void Action::PreviousTrack()
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;
@@ -167,7 +185,7 @@ void PreviousTrack()
 	CoUninitialize();
 }
 
-void Random()
+void Action::Random()
 {
 	IiTunes* iITunes = 0;
 	IITPlaylist* iIPlaylist = 0;
@@ -199,7 +217,7 @@ void Random()
 
 }
 
-void Repeat()
+void Action::Repeat()
 {
 	IiTunes* iITunes = 0;
 	IITPlaylist* iIPlaylist = 0;
@@ -241,7 +259,7 @@ void Repeat()
 
 }
 
-void RateSong(unsigned int rating)
+void Action::RateSong(unsigned int rating)
 {
 	IiTunes* iITunes = 0;
 	IITTrack* iITTrack = 0;
@@ -266,37 +284,37 @@ void RateSong(unsigned int rating)
 	CoUninitialize();
 }
 
-void ClearSongRating()
+void Action::ClearSongRating()
 {
 	RateSong(0);
 }
 
-void SongRating1()
+void Action::SongRating1()
 {
 	RateSong(20);
 }
 
-void SongRating2()
+void Action::SongRating2()
 {
 	RateSong(40);
 }
 
-void SongRating3()
+void Action::SongRating3()
 {
 	RateSong(60);
 }
 
-void SongRating4()
+void Action::SongRating4()
 {
 	RateSong(80);
 }
 
-void SongRating5()
+void Action::SongRating5()
 {
 	RateSong(100);
 }
 
-void ShowHide()
+void Action::ShowHide()
 {
 	IiTunes* iITunes = 0;
 	IITBrowserWindow* iITBrowserWindow = 0; 
@@ -326,7 +344,7 @@ void ShowHide()
 	CoUninitialize();
 }
 
-void ToggleVolume(long step)
+void Action::ToggleVolume(long step)
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;
@@ -349,17 +367,17 @@ void ToggleVolume(long step)
 	CoUninitialize();
 }
 
-void VolumeUp()
+void Action::VolumeUp()
 {
 	ToggleVolume(5);
 }
 
-void VolumeDown()
+void Action::VolumeDown()
 {
 	ToggleVolume(-5);
 }
 
-void ToggleMute()
+void Action::ToggleMute()
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;
@@ -382,7 +400,7 @@ void ToggleMute()
 	CoUninitialize();
 }
 
-void Quit()
+void Action::Quit()
 {
 	IiTunes* iITunes = 0;
 	HRESULT hRes;

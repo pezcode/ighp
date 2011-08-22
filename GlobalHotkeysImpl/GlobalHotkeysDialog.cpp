@@ -20,10 +20,9 @@
  * THE SOFTWARE.
  */
 
+#include "GlobalHotkeysPlugin.h"
 #include "GlobalHotkeysDialog.h"
 #include "PluginSettings.h" 
-
-extern std::map<const std::string, Actions> actionsMap;
 
 void CHotkey::PreCreate(CREATESTRUCT &cs)
 {
@@ -44,35 +43,19 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 BOOL GlobalHotkeysDialog::OnInitDialog()
 {
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
-	m_actionsComboBox.AttachDlgItem(IDC_ACTIONS_COMBO, this);
 	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
-
 	m_applyButton.AttachDlgItem(IDAPPLY, this);
-
-	// no unmodified keys, add default ctrl
-	m_hotkeyInput.SetRules(HKCOMB_NONE, MAKELPARAM(HKCOMB_C, 0));
 
 	InitHotkeysListViewColumns();
 	m_listviewIndex = 0;
-
 	PopulateHotkeysList();
-	PopulateActionsComboBox();
-
 	return TRUE;
 }
 
 BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
-	switch (LOWORD(wParam))
+	switch(LOWORD(wParam))
     {
-	case IDC_ACTIONS_COMBO:
-		switch(HIWORD(wParam))
-		{
-		case CBN_SELCHANGE:
-			//OnSelectedActionChanged();
-			return TRUE;
-		}
-		break;
 	case IDC_ADD:
 		OnAdd();
 		return TRUE;
@@ -140,7 +123,7 @@ void GlobalHotkeysDialog::OnModify()
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
-	ReloadHotkeys();
+	//ReloadHotkeys();
 	CDialog::OnOK();
 }
 
@@ -151,12 +134,15 @@ void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
 
 void GlobalHotkeysDialog::OnApply()
 {
-	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
+	std::map<Action::Type, Hotkey> hotkeys = PluginSettings::Instance().GetHotkeys();
 
 	// get listview items
 	// edit hotkeys accordingly
 
-	PluginSettings::Instance()->WriteConfigFile(hotkeys);
+	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(hotkeys);
+	//PluginSettings::Instance()->SetHotkeys(hotkeys);
+	//PluginSettings::Instance().WriteConfig();
 
 	m_applyButton.EnableWindow(false);
 }
@@ -165,13 +151,13 @@ void GlobalHotkeysDialog::InitHotkeysListViewColumns()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
-	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, 150, 0);
+	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, -1, 0);
 	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, -1, 1);
 
 	//m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
-void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std::string hotkey)
+void GlobalHotkeysDialog::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
 {
 	m_hotkeysListView.InsertItem(m_listviewIndex, action.c_str());
 	m_hotkeysListView.SetItemText(m_listviewIndex, 1, hotkey.c_str());
@@ -181,29 +167,29 @@ void GlobalHotkeysDialog::AddHotkeyListItem(const std::string action, const std:
 
 void GlobalHotkeysDialog::PopulateHotkeysList()
 {
-	std::map<const unsigned int, Hotkey*>* hotkeys = PluginSettings::Instance()->GetHotkeys();
-	std::map<const unsigned int, Hotkey*>::const_iterator iter;
+	const std::map<Action::Type, Hotkey>& hotkeys = PluginSettings::Instance().GetHotkeys();
 
-	for (iter = hotkeys->begin(); iter != hotkeys->end(); iter++) {
-		const std::string action = iter->second->GetActionName();
-		const std::string hotkey = iter->second->GetHotkeyName();
-
-		//WORD key = iter->second->GetKeyCode();
-		//key |= iter->second->
-
-		AddHotkeyListItem(action, hotkey);
+	std::map<Action::Type, Hotkey>::const_iterator iter;
+	for(iter = hotkeys.begin(); iter != hotkeys.end(); iter++)
+	{
+		Action::Type action = iter->first;
+		Hotkey hotkey = iter->second;
+		AddHotkeyListItem(Action::names[action], hotkey.toString());
 	}
 
-	// Update second column (account for possible scrollbar)
+	// Update column widths after filling the listview (account for possible scrollbar)
+	m_hotkeysListView.SetColumnWidth(0, LVSCW_AUTOSIZE);
 	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
+/*
 void GlobalHotkeysDialog::PopulateActionsComboBox()
 {
-	std::map<const std::string, Actions>::const_iterator iter;
-	for (iter = actionsMap.begin(); iter != actionsMap.end(); iter++) {
+
+	std::map<Action::Type, std::string>::const_iterator iter;
+	for (iter = Action::names.begin(); iter !=  Action::names.end(); iter++) {
 		m_actionsComboBox.AddString(iter->first.c_str());
-	}	 
+	}
 }
 
 //unused
@@ -230,6 +216,7 @@ void GlobalHotkeysDialog::OnSelectedActionChanged()
 	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
 	//m_hotkeyTextEdit.SetWindowText(textHotkey.c_str());
 }
+*/
 
 void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 {
@@ -239,8 +226,8 @@ void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 	int index = lpStateChange->iItem;
 	std::string textAction = m_hotkeysListView.GetItemText(index, 0);
 
-	int cbItemIndex = m_actionsComboBox.FindStringExact(-1, textAction.c_str());
-	m_actionsComboBox.SetCurSel(cbItemIndex);
+	//int cbItemIndex = m_actionsComboBox.FindStringExact(-1, textAction.c_str());
+	//m_actionsComboBox.SetCurSel(cbItemIndex);
 
 	std::string textHotkey = m_hotkeysListView.GetItemText(index, 1);
 	//m_hotkeyInput.SetHotKey();

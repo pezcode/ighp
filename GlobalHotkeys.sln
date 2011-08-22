@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlobalHotkeysPlugin", "GlobalHotkeysPlugin\GlobalHotkeysPlugin.vcproj", "{74745936-4D3F-471D-8296-937B68532609}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlobalHotkeysImpl", "GlobalHotkeysImpl\GlobalHotkeysImpl.vcproj", "{656FA21C-B5AD-443C-BD2B-C9FE72B613BC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,10 +13,6 @@ Global
 		{74745936-4D3F-471D-8296-937B68532609}.Debug|Win32.Build.0 = Debug|Win32
 		{74745936-4D3F-471D-8296-937B68532609}.Release|Win32.ActiveCfg = Release|Win32
 		{74745936-4D3F-471D-8296-937B68532609}.Release|Win32.Build.0 = Release|Win32
-		{656FA21C-B5AD-443C-BD2B-C9FE72B613BC}.Debug|Win32.ActiveCfg = Debug|Win32
-		{656FA21C-B5AD-443C-BD2B-C9FE72B613BC}.Debug|Win32.Build.0 = Debug|Win32
-		{656FA21C-B5AD-443C-BD2B-C9FE72B613BC}.Release|Win32.ActiveCfg = Release|Win32
-		{656FA21C-B5AD-443C-BD2B-C9FE72B613BC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

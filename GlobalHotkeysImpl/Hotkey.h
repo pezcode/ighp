@@ -20,59 +20,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef HOTKEY_H
+#define HOTKEY_H
 
 #include <string>
-#include <map>
 
-static enum Actions
+class Hotkey
 {
-	eActionNotDefined,
-	eActionReloadHotkeys,
-	eActionOpenSettingsFile,
-	eActionOpenSettingsDialog,
-	eActionPlayPause,
-	eActionNextTrack,
-	eActionPreviousTrack,
-	eActionRandom,
-	eActionRepeat,
-	eActionSongRatingClear,
-	eActionSongRating1,
-	eActionSongRating2,
-	eActionSongRating3,
-	eActionSongRating4,
-	eActionSongRating5,
-	eActionShowHide,
-	eActionVolumeUp,
-	eActionVolumeDown,
-	eActionToggleMute,
-	eActionQuit
+public:
+	Hotkey() : m_keyCode(0), m_modifiers(0) { }
+	explicit Hotkey(unsigned char key_code, unsigned char modifiers) : m_keyCode(key_code), m_modifiers(modifiers) { }
+
+	unsigned char GetKeyCode() const { return m_keyCode; }
+	unsigned char GetModifiers() const { return m_modifiers; }
+
+	std::string toString() const;
+
+	bool IsEmpty() const { return (m_keyCode != 0); }
+
+private:
+	unsigned char m_keyCode;
+	unsigned char m_modifiers;
+
+	static std::string GetKeyName(unsigned char keyCode);
 };
 
-extern std::map<const std::string, Actions> actionsMap;
-
-void InitActionsMap();
-
-void ReloadHotkeys();
-void OpenSettingsFile();
-void OpenSettingsDialog();
-
-void PlayPause();
-void NextTrack();
-void PreviousTrack();
-void Random();
-void Repeat();
-void ClearSongRating();
-void SongRating1();
-void SongRating2();
-void SongRating3();
-void SongRating4();
-void SongRating5();
-void ShowHide();
-void VolumeUp();
-void VolumeDown();
-void ToggleMute();
-void Quit();
-
-#endif /* ACTIONS_H */
+#endif /* HOTKEY_H */

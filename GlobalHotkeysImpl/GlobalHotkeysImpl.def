@@ -1,9 +1,0 @@
-; GlobalHotkeysImpl.def : Declares the module parameters for the application
-LIBRARY "GlobalHotkeysImpl"
-EXPORTS
-; Explicitly exported initialization routine
-Initialize @1
-Release @2
-InitGlobalHotkeysPlugin @3
-ReleaseGlobalHotkeysPlugin @4
-ShowSettingsDialog @5

@@ -26,35 +26,35 @@
 #include <string>
 #include <map>
 
-#include "Hotkeys.h"
-#include "Actions.h"
+#include "Hotkey.h"
+#include "Action.h"
+
+#include "iTunesAPI.h"
 
 class PluginSettings
 {
 public:
-	static PluginSettings* Instance();
-	static void Destroy();
+	static PluginSettings& Instance() { return ms_instance; }
 
-	std::map<const unsigned int, Hotkey*>* GetHotkeys();
+	const std::map<Action::Type, Hotkey>& GetHotkeys() const { return m_hotkeys; }
+	//void SetHotkeys(const std::map<Action::Type, Hotkey>& hotkeys) { m_hotkeys = hotkeys; }
 
-	bool ReadConfigFile(std::map<const unsigned int, Hotkey*>* hotkeys);
-	bool WriteConfigFile(std::map<const unsigned int, Hotkey*>* hotkeys);
+	void SetiTunesData(void* appCookie, ITAppProcPtr appProc);
 
-	bool GetConfigFile(std::string* str);
-	bool GetConfigFileDir(std::string* str);
+	bool ReadConfig();
+	bool WriteConfig();
 
 private:
-	static PluginSettings* ms_instance;
+	PluginSettings();
 
-	const std::string m_configFile;
-	unsigned int m_keyId;
+	static PluginSettings ms_instance;
 
-	std::map<const unsigned int, Hotkey*>* m_hotkeys;
+	//iTunes data, needed for API calls
+	void* appCookie;
+	ITAppProcPtr appProc;
 
-	explicit PluginSettings();
-	~PluginSettings();
-
-	void AddDefaultHotkeys();
+	// List of actions and their associated hotkeys
+	std::map<Action::Type, Hotkey> m_hotkeys;
 };
 
 #endif /* PLUGIN_SETTINGS_H */

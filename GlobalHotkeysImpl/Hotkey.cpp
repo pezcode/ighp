@@ -20,58 +20,55 @@
  * THE SOFTWARE.
  */
 
-#include "PluginSettings.h" 
-#include "GlobalHotkeysPlugin.h"
+#include <windows.h>
 
-GlobalHotkeysPlugin* globalHotkeysPlugin = 0;
-HANDLE dllHandle = 0;
+#include "Hotkey.h"
+#include "Action.h"
 
-BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
+std::string Hotkey::toString() const
 {
-	dllHandle = hModule;
+	std::string hotkey_name = GetKeyName(m_keyCode);
 
-	switch (ul_reason_for_call)
+	//ctrl, shift, alt, win
+
+	if(m_modifiers & MOD_CONTROL)
+		hotkey_name += " + " + GetKeyName(VK_CONTROL);
+
+	if(m_modifiers & MOD_SHIFT)
+		hotkey_name += " + " + GetKeyName(VK_SHIFT);
+
+	if(m_modifiers & MOD_ALT)
+		hotkey_name += " + " + GetKeyName(VK_MENU);
+
+	if(m_modifiers & MOD_WIN)
+		hotkey_name += " + " + GetKeyName(VK_LWIN); //VK_RWIN?
+
+	return hotkey_name;
+}
+
+std::string Hotkey::GetKeyName(BYTE virtualKey)
+{
+	UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+
+	// because MapVirtualKey strips the extended bit for some keys
+	switch(virtualKey)
 	{
-		case DLL_PROCESS_ATTACH:
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
+		case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN: // arrow keys
+		case VK_PRIOR: case VK_NEXT: // page up and page down
+		case VK_END: case VK_HOME:
+		case VK_INSERT: case VK_DELETE:
+		case VK_DIVIDE: // numpad slash
+		case VK_NUMLOCK:
+		{
+			scanCode |= (1 << 8); // set extended bit
 			break;
+		}
 	}
 
-	return true;
-}
-
-extern "C" void WINAPI Initialize()
-{
-	// Write here all the code you need to initialize the DLL
-}
-
-extern "C" void WINAPI Release()
-{
-	// Write here all the code you need to free everything ...
-}
-
-extern "C" void WINAPI InitGlobalHotkeysPlugin()
-{
-	PluginSettings::Instance()->ReadConfigFile(PluginSettings::Instance()->GetHotkeys());
-
-	globalHotkeysPlugin = new GlobalHotkeysPlugin();
-}
-
-extern "C" void WINAPI ReleaseGlobalHotkeysPlugin()
-{
-	delete globalHotkeysPlugin;
-	globalHotkeysPlugin = 0;
-
-	PluginSettings::Destroy();
-}
-
-extern "C" void WINAPI ShowSettingsDialog(HWND parent)
-{
-	GlobalHotkeysDialog& dialog = GetGlobalHotkeysPlugin().GetGlobalHotkeysDialog();
-	if(parent)
-		dialog.SetDlgParent(FromHandle(parent));
-	dialog.DoModal();
-	dialog.SetDlgParent(NULL);
+	char keyName[50];
+	if(GetKeyNameText(scanCode << 16, keyName, _countof(keyName)))
+	{
+		return keyName;
+	}
+	return "";
 }
