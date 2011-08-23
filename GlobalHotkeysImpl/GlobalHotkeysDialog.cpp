@@ -139,6 +139,9 @@ int CSettingsPage::OnApply()
 void CSettingsPage::OnSet()
 {
 	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
+	if(index < 0)
+		return;
+
 	Action::Type action = Action::Type(index + 1);
 
 	WORD wKeys = m_hotkeyInput.GetHotKey();
@@ -155,6 +158,9 @@ void CSettingsPage::OnSet()
 void CSettingsPage::OnClear()
 {
 	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
+	if(index < 0)
+		return;
+
 	Action::Type action = Action::Type(index + 1);
 	m_hotkeys[action] = Hotkey(); // set empty
 
@@ -180,14 +186,11 @@ void CSettingsPage::AddHotkeyListItem(const std::string& action, const std::stri
 
 void CSettingsPage::PopulateHotkeysList()
 {
-	const std::map<Action::Type, Hotkey>& hotkeys = PluginSettings::Instance().GetHotkeys();
-
-	std::map<Action::Type, Hotkey>::const_iterator iter;
-	for(iter = hotkeys.begin(); iter != hotkeys.end(); iter++)
+	std::map<Action::Type, std::string>::const_iterator iter;
+	for(iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
-		Action::Type action = iter->first;
-		Hotkey hotkey = iter->second;
-		AddHotkeyListItem(Action::names[action], hotkey.toString());
+		Hotkey hotkey = m_hotkeys[iter->first];
+		AddHotkeyListItem(iter->second, hotkey.toString());
 	}
 
 	// Update column widths after filling the listview (account for possible scrollbar)
