@@ -16,9 +16,10 @@ The following actions are supported:
 Action	           Description
 
 Play/Pause          toggle play/pause
-Stop                stop playback
 Next Track          next track in playlist
 Previous Track      previous track in playlist
+Fast Forward        skip forward in track
+Rewind              skip backwards in track
 Toggle Random       toggle random on/off
 Toggle Repeat       toggle repeat on/off
 Clear Song Rating   clear rating for the selected song

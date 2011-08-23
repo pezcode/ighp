@@ -2,7 +2,7 @@
 
  + Settings dialog accessible from iTunes Visualizer menu
  + Options are saved inside iTunes
- + New actions: Stop, Quit
+ + New actions: Fast Forward, Rewind, Quit
  * Merged the two DLLs into one
  - Removed support for hotkeys involving the Windows key
  - Removed actions: OpenSettingsFile, OpenSettingsDialog, ReloadHotkeys
