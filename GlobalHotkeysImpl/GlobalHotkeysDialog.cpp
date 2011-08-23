@@ -42,7 +42,7 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 
 BOOL GlobalHotkeysDialog::OnInitDialog()
 {
-	//Action::InitNames();
+	Action::InitNames();
 
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
 	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
@@ -53,7 +53,7 @@ BOOL GlobalHotkeysDialog::OnInitDialog()
 	// Temporarily disable hotkeys
 	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
 
-	InitHotkeysListViewColumns();
+	InitHotkeysListView();
 	PopulateHotkeysList();
 	return TRUE;
 }
@@ -129,28 +129,21 @@ void GlobalHotkeysDialog::OnOK()
 	CDialog::OnOK();
 }
 
-void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
-{
-	CDialog::EndDialog(nResult);
-}
-
 void GlobalHotkeysDialog::OnApply()
 {
-	// save our internal hotkeys
+	// save new hotkeys
 	PluginSettings::Instance().SetHotkeys(m_hotkeys);
 	PluginSettings::Instance().WriteConfig();
 
 	m_applyButton.EnableWindow(false);
 }
 
-void GlobalHotkeysDialog::InitHotkeysListViewColumns()
+void GlobalHotkeysDialog::InitHotkeysListView()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
 	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, -1, 0);
 	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, -1, 1);
-
-	//m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void GlobalHotkeysDialog::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
@@ -176,7 +169,7 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
-void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
+void GlobalHotkeysDialog::OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange)
 {
 	if((lpStateChange->uOldState & LVIS_SELECTED) || !(lpStateChange->uNewState & LVIS_SELECTED))
 		return;
@@ -185,5 +178,8 @@ void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 	Hotkey hotkey = m_hotkeys[action];
 
 	m_hotkeyInput.SetHotKey(hotkey.GetKeyCode(), hotkey.GetModifiers());
-	//this->SendMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
+
+	// Set focus to hotkey control
+	// Only works while the mouse button is down, then goes back to the listview
+	this->PostMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
 }

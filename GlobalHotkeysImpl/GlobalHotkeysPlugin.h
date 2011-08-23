@@ -67,11 +67,9 @@ public:
 	const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
 
 	static const int version = 10;
-	//static const char version_str[];
 
 private:
 	GlobalHotkeysWnd m_mainWindow;
-	GlobalHotkeysDialog m_settingsDialog;
 
 	std::vector<Action> m_hotkeys;
 };

@@ -70,7 +70,6 @@ protected:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
 	virtual void OnOK();
-	virtual void EndDialog(INT_PTR nResult);
 
 private:
 	CListView m_hotkeysListView;
@@ -84,16 +83,14 @@ private:
 
 	void OnApply();
 
-	void InitHotkeysListViewColumns();
+	void InitHotkeysListView();
 	void PopulateHotkeysList();
-	//void PopulateActionsComboBox();
 
 	void CreateHotkeyControl();
 
 	void AddHotkeyListItem(const std::string& action, const std::string& hotkey);
 
-	//void OnSelectedActionChanged();
-	void OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange);
+	void OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange);
 
 };
 

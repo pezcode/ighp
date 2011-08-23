@@ -22,9 +22,7 @@
 
 #include "GlobalHotkeysPlugin.h"
 
-//const char GlobalHotkeysPlugin::version_str[] = "0.1.0";
-
-GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(IDD_GH_DIALOG)
+GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle)
 {
 	SetResourceHandle(dllHandle);
 	m_mainWindow.Create();
@@ -33,7 +31,6 @@ GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog
 GlobalHotkeysPlugin::~GlobalHotkeysPlugin()
 {
 	m_mainWindow.Destroy();
-	//::PostQuitMessage(0);
 }
 
 void GlobalHotkeysWnd::PreRegisterClass(WNDCLASS &wc)

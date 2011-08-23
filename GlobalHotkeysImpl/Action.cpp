@@ -92,8 +92,6 @@ void Action::InitNames()
 {
 	if(names.size() != 0)
 		return;
-
-	//names.insert(std::make_pair(eActionPlayPause, std::string("PlayPause")));
 	
 	names[eActionPlayPause] = std::string("PlayPause");
 	names[eActionNextTrack] = std::string("NextTrack");

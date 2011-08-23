@@ -43,8 +43,8 @@
 const char kTVisualPluginName[] = "Global Hotkeys - http://ighp.berlios.de";
 const OSType kTVisualPluginCreator = 'SCos';
 
-const UInt8 kTVisualPluginMajorVersion = 1;
-const UInt8 kTVisualPluginMinorVersion = 0;
+const UInt8 kTVisualPluginMajorVersion = 0;
+const UInt8 kTVisualPluginMinorVersion = 1;
 const UInt8 kTVisualPluginReleaseStage = finalStage;
 const UInt8 kTVisualPluginNonFinalRelease = 0;
 

@@ -37,7 +37,7 @@ Quit               exit iTunes
 
 The latest release of the plugin can be found on https://github.com/pezcode/ighp.
 You can choose between the installer, the binary package or the source package.
-The source code can be compiled using Visual C++ 2005 Express and above. If you
+The source code can be compiled using Visual C++ 2008 Express and above. If you
 downloaded the dll file or the source code you must copy it to the iTunes
 plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.
 
