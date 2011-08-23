@@ -41,15 +41,36 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 	cs.cy             = CW_USEDEFAULT;
 }
 
-BOOL GlobalHotkeysDialog::OnInitDialog()
+LRESULT CHotkey::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch(uMsg)
+	{
+	case WM_GETDLGCODE:
+		return DLGC_WANTALLKEYS;
+	}
+
+	return WndProcDefault(uMsg, wParam, lParam);
+}
+
+
+void GlobalHotkeysDialog::OnInitialUpdate()
+{
+	CenterWindow();
+}
+
+BOOL CAboutPage::OnInitDialog()
+{
+	return TRUE;
+}
+
+BOOL CSettingsPage::OnInitDialog()
 {
 	Action::InitNames();
 
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
 	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
-	m_applyButton.AttachDlgItem(IDAPPLY, this);
 
-	// Get a temporary copy
+	//Get a temporary copy
 	m_hotkeys = PluginSettings::Instance().GetHotkeys();
 	// Temporarily disable hotkeys
 	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
@@ -59,7 +80,7 @@ BOOL GlobalHotkeysDialog::OnInitDialog()
 	return TRUE;
 }
 
-BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
+BOOL CSettingsPage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	switch(LOWORD(wParam))
     {
@@ -70,15 +91,11 @@ BOOL GlobalHotkeysDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 	case IDC_CLEAR:
 		OnClear();
 		return TRUE;
-	case IDAPPLY:
-		OnApply();
-		return TRUE;
     }
-
 	return FALSE;
 }
 
-LRESULT GlobalHotkeysDialog::OnNotify(WPARAM wParam, LPARAM lParam)
+LRESULT CSettingsPage::OnNotify(WPARAM wParam, LPARAM lParam)
 {
 	switch(LPNMHDR(lParam)->idFrom)
 	{
@@ -91,10 +108,35 @@ LRESULT GlobalHotkeysDialog::OnNotify(WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	}
-	return FALSE;
+
+	return CPropertyPage::OnNotify(wParam, lParam);
 }
 
-void GlobalHotkeysDialog::OnSet()
+int CSettingsPage::OnOK()
+{
+	OnApply();
+	// Enable hotkeys again
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+
+	return PSNRET_NOERROR;
+}
+
+void CSettingsPage::OnCancel()
+{
+	// Enable hotkeys again
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+}
+
+int CSettingsPage::OnApply()
+{
+	// save new hotkeys
+	PluginSettings::Instance().SetHotkeys(m_hotkeys);
+	PluginSettings::Instance().WriteConfig();
+
+	return PSNRET_NOERROR;
+}
+
+void CSettingsPage::OnSet()
 {
 	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
 	Action::Type action = Action::Type(index + 1);
@@ -107,10 +149,10 @@ void GlobalHotkeysDialog::OnSet()
 	m_hotkeysListView.SetItemText(index, 1, hotkey.toString().c_str());
 	m_hotkeys[action] = hotkey;
 
-	m_applyButton.EnableWindow(true);
+	PropSheet_Changed(GetParent()->GetHwnd(), m_hWnd);
 }
 
-void GlobalHotkeysDialog::OnClear()
+void CSettingsPage::OnClear()
 {
 	int index = m_hotkeysListView.GetNextItem(-1, LVNI_SELECTED);
 	Action::Type action = Action::Type(index + 1);
@@ -119,32 +161,10 @@ void GlobalHotkeysDialog::OnClear()
 	m_hotkeyInput.SetHotKey(0, 0);
 	m_hotkeysListView.SetItemText(index, 1, "");
 
-	m_applyButton.EnableWindow(true);
+	PropSheet_Changed(GetParent()->GetHwnd(), m_hWnd);
 }
 
-void GlobalHotkeysDialog::OnOK()
-{
-	OnApply();
-	CDialog::OnOK();
-}
-
-void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
-{
-	// Enable hotkeys again
-	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
-	CDialog::EndDialog(nResult);
-}
-
-void GlobalHotkeysDialog::OnApply()
-{
-	// save new hotkeys
-	PluginSettings::Instance().SetHotkeys(m_hotkeys);
-	PluginSettings::Instance().WriteConfig();
-
-	m_applyButton.EnableWindow(false);
-}
-
-void GlobalHotkeysDialog::InitHotkeysListView()
+void CSettingsPage::InitHotkeysListView()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
@@ -152,13 +172,13 @@ void GlobalHotkeysDialog::InitHotkeysListView()
 	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, -1, 1);
 }
 
-void GlobalHotkeysDialog::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
+void CSettingsPage::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
 {
 	int index = m_hotkeysListView.InsertItem(m_hotkeysListView.GetItemCount(), action.c_str());
 	m_hotkeysListView.SetItemText(index, 1, hotkey.c_str());
 }
 
-void GlobalHotkeysDialog::PopulateHotkeysList()
+void CSettingsPage::PopulateHotkeysList()
 {
 	const std::map<Action::Type, Hotkey>& hotkeys = PluginSettings::Instance().GetHotkeys();
 
@@ -175,7 +195,7 @@ void GlobalHotkeysDialog::PopulateHotkeysList()
 	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
-void GlobalHotkeysDialog::OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange)
+void CSettingsPage::OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange)
 {
 	if((lpStateChange->uOldState & LVIS_SELECTED) || !(lpStateChange->uNewState & LVIS_SELECTED))
 		return;
@@ -187,5 +207,5 @@ void GlobalHotkeysDialog::OnSelectedListItemChanged(const NMLISTVIEW* lpStateCha
 
 	// Set focus to hotkey control
 	// Only works while the mouse button is down, then goes back to the listview
-	this->PostMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
+	//this->PostMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
 }

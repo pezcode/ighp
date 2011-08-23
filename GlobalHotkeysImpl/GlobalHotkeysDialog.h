@@ -26,7 +26,8 @@
 
 #include <windows.h>
 
-#include <Win32++\dialog.h>
+//#include <Win32++\dialog.h>
+#include <Win32++\propertysheet.h>
 #include <Win32++\stdcontrols.h>
 #include <Win32++\controls.h>
 #include <Win32++\listview.h>
@@ -38,8 +39,10 @@
 class CHotkey : public CWnd
 {
 public:
-	explicit CHotkey() { } 
+	CHotkey() { } 
 	virtual ~CHotkey() { }
+
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	WORD GetHotKey()
 	{
@@ -60,40 +63,57 @@ protected:
 	virtual void PreCreate(CREATESTRUCT &cs);
 };
 
-class GlobalHotkeysDialog : public CDialog
+class CSettingsPage : public CPropertyPage
 {
 public:
-	explicit GlobalHotkeysDialog(UINT nResID, CWnd* pParent = NULL) : CDialog(nResID, pParent) { };
-	virtual ~GlobalHotkeysDialog() { };
+	CSettingsPage() : CPropertyPage(IDD_GH_SETTINGS, "Settings") { }
+	virtual ~CSettingsPage() { }
 
-protected:
 	virtual BOOL OnInitDialog();
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
-	virtual void OnOK();
-	virtual void EndDialog(INT_PTR nResult);
+	
+	virtual int  OnOK();
+	virtual void OnCancel();
+	virtual int  OnApply();
 
 private:
 	CListView m_hotkeysListView;
 	CHotkey m_hotkeyInput;
-	CButton m_applyButton;
 
 	std::map<Action::Type, Hotkey> m_hotkeys; // temporary copy
 
 	void OnSet();
 	void OnClear();
 
-	void OnApply();
-
 	void InitHotkeysListView();
 	void PopulateHotkeysList();
-
-	void CreateHotkeyControl();
 
 	void AddHotkeyListItem(const std::string& action, const std::string& hotkey);
 
 	void OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange);
+};
 
+class CAboutPage : public CPropertyPage
+{
+public:
+	CAboutPage() : CPropertyPage(IDD_GH_ABOUT, "About") { }
+	virtual ~CAboutPage() { }
+
+	virtual BOOL OnInitDialog();
+
+private:
+
+};
+
+class GlobalHotkeysDialog : public CPropertySheet
+{
+public:
+	GlobalHotkeysDialog(CWnd* pParent = NULL) : CPropertySheet("Global Hotkeys Plugin", pParent) { }
+	virtual ~GlobalHotkeysDialog() { };
+
+protected:
+	virtual void OnInitialUpdate();
 };
 
 #endif /* GLOBAL_HOTKEYS_DIALOG_H */

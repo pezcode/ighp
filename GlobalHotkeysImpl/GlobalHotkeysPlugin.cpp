@@ -96,6 +96,14 @@ void GlobalHotkeysWnd::OnDestroy()
 	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
 }
 
+void GlobalHotkeysPlugin::ShowSettingsDialog(HWND Parent)
+{
+	GlobalHotkeysDialog dlg(FromHandle(Parent));
+	dlg.AddPage(new CSettingsPage);
+	dlg.AddPage(new CAboutPage);
+	dlg.DoModal();
+}
+
 bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys)
 {
 	UnregisterHotkeys();

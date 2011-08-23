@@ -90,10 +90,7 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 void ShowSettingsDialog(HWND parent)
 {
 	// we should probably be doing synchronization here
-	GlobalHotkeysDialog dialog = globalHotkeysPlugin->GetSettingsDialog();
-	if(parent)
-		dialog.SetDlgParent(FromHandle(parent));
-	dialog.DoModal();
+	globalHotkeysPlugin->ShowSettingsDialog(parent);
 }
 
 /*
