@@ -1,0 +1,28 @@
+0.1.0:
+
+ + Settings dialog accessible from iTunes Visualizer menu
+ + Options are saved inside iTunes
+ + New action: Quit
+ * Merged the two DLLs into one
+ - Removed support for hotkeys involving the Windows key
+ - Removed actions: OpenSettingsFile, OpenSettingsDialog, ReloadHotkeys
+
+0.0.4:
+
+ + Support for standard multimedia keys: MMPlayPause, MMStop,
+   MMPrev, MMNext, MMVolUp, MMVolDown, MMVolMute
+
+0.0.3:
+
+ + Two new actions: OpenSettingsFile and ReloadHotkeys
+ + Ability to modify and reload hotkeys without closing iTunes
+ + Configuration file stored in user folder
+ + Installer kit
+
+0.0.2:
+
+ + This release adds more actions
+
+0.0.1:
+
+ * First alfa release
