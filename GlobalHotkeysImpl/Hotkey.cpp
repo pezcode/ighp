@@ -27,30 +27,33 @@
 
 std::string Hotkey::toString() const
 {
-	std::string hotkey_name = GetKeyName(m_keyCode);
+	std::string hotkey_name;
 
-	//ctrl, shift, alt, win
+	if(!IsEmpty())
+	{
+		//ctrl, shift, alt, win
 
-	if(m_modifiers & HOTKEYF_CONTROL)
-		hotkey_name += " + " + GetKeyName(VK_CONTROL);
+		if(m_modifiers & HOTKEYF_CONTROL)
+			hotkey_name += GetKeyName(VK_CONTROL) + " + ";
 
-	if(m_modifiers & HOTKEYF_SHIFT)
-		hotkey_name += " + " + GetKeyName(VK_SHIFT);
+		if(m_modifiers & HOTKEYF_SHIFT)
+			hotkey_name += GetKeyName(VK_SHIFT) + " + ";
 
-	if(m_modifiers & HOTKEYF_ALT)
-		hotkey_name += " + " + GetKeyName(VK_LMENU);
+		if(m_modifiers & HOTKEYF_ALT)
+			hotkey_name += GetKeyName(VK_LMENU) + " + ";
 
-	if(m_modifiers & HOTKEYF_EXT) // right ALT + CTRL
-		hotkey_name += " + " + GetKeyName(VK_RMENU); //VK_RWIN?
+		hotkey_name += GetKeyName(m_keyCode, (m_modifiers & HOTKEYF_EXT) != 0);
+	}
 
 	return hotkey_name;
 }
 
-std::string Hotkey::GetKeyName(BYTE virtualKey)
+std::string Hotkey::GetKeyName(BYTE virtualKey, bool extended)
 {
-	UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+	UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC) << 16;
 
 	// because MapVirtualKey strips the extended bit for some keys
+	/*
 	switch(virtualKey)
 	{
 		case VK_LEFT: case VK_UP: case VK_RIGHT: case VK_DOWN: // arrow keys
@@ -59,14 +62,20 @@ std::string Hotkey::GetKeyName(BYTE virtualKey)
 		case VK_INSERT: case VK_DELETE:
 		case VK_DIVIDE: // numpad slash
 		case VK_NUMLOCK:
+		//case VK_VOLUME_MUTE: case VK_VOLUME_DOWN: case VK_VOLUME_UP: case VK_MEDIA_NEXT_TRACK: case VK_MEDIA_PREV_TRACK: case VK_MEDIA_STOP: case VK_MEDIA_PLAY_PAUSE:
 		{
-			scanCode |= (1 << 8); // set extended bit
+			scanCode |= (1 << 24); // set extended bit
 			break;
 		}
 	}
+	}*/
+	if(extended) // set extended bit
+		scanCode |= (1 << 24);
+
+	scanCode |= (1 << 25); // don't care
 
 	char keyName[50];
-	if(GetKeyNameText(scanCode << 16, keyName, _countof(keyName)))
+	if(GetKeyNameText(scanCode, keyName, _countof(keyName)))
 	{
 		return keyName;
 	}

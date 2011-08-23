@@ -49,7 +49,6 @@ const UInt8 kTVisualPluginReleaseStage = finalStage;
 const UInt8 kTVisualPluginNonFinalRelease = 0;
 
 static GlobalHotkeysPlugin* globalHotkeysPlugin = 0;
-//static HINSTANCE dllHandle = 0;
 
 struct VisualPluginData
 {
@@ -89,9 +88,8 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 */
 void ShowSettingsDialog(HWND parent)
 {
-	// new dialog...
 	// we should be doing synchronization here though
-	GlobalHotkeysDialog& dialog = globalHotkeysPlugin->GetSettingsDialog();
+	GlobalHotkeysDialog dialog = globalHotkeysPlugin->GetSettingsDialog();
 	if(parent)
 		dialog.SetDlgParent(FromHandle(parent));
 	dialog.DoModal();
@@ -131,8 +129,8 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			messageInfo->u.initMessage.refCon = (void*)visualPluginData;
 
 			PluginSettings::Instance().SetiTunesData(visualPluginData->appCookie, visualPluginData->appProc);
-			//PluginSettings::Instance().ReadConfig();
-			//globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+			PluginSettings::Instance().ReadConfig();
+			globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
 			break;
 		}
 
@@ -141,8 +139,8 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 		*/		
 		case kVisualPluginCleanupMessage:
 			delete visualPluginData;
-			//PluginSettings::Instance().WriteConfig();
-			//globalHotkeysPlugin->UnregisterHotkeys();
+			PluginSettings::Instance().WriteConfig();
+			globalHotkeysPlugin->UnregisterHotkeys();
 			break;
 
 		/*
@@ -155,7 +153,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 
 		case kVisualPluginConfigureMessage:
 			// get iTunes window as dialog parent
-			ShowSettingsDialog(NULL);
+			ShowSettingsDialog(FindWindow("iTunes", NULL));
 			break;
 
 		/*
@@ -174,7 +172,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 		case kVisualPluginHideWindowMessage:
 			visualPluginData->destPort = NULL;
 			break;
-		
+
 		/*
 			Sent when iTunes needs to change the port or rectangle of the currently
 			displayed visual.
@@ -184,7 +182,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			visualPluginData->destRect = messageInfo->u.setWindowMessage.drawRect;
 			RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
 			break;
-		
+
 		/*
 			Sent for the visual plugin to render a frame.
 		*/
@@ -228,7 +226,9 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 */
 static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 {
-	PlayerMessageInfo playerMessageInfo = { 0 };
+	PlayerMessageInfo playerMessageInfo;
+
+	memset(&playerMessageInfo, 0, sizeof(playerMessageInfo));
 
 	// copy in name length byte first
 	playerMessageInfo.u.registerVisualPluginMessage.name[0] = strlen(kTVisualPluginName);
@@ -291,12 +291,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 	switch(fdwReason)
 	{
 		case DLL_PROCESS_ATTACH:
-			//dllHandle = hinstDLL;
 			globalHotkeysPlugin = new GlobalHotkeysPlugin(hinstDLL);
 			break;
 		case DLL_PROCESS_DETACH:
 			delete globalHotkeysPlugin;
-			globalHotkeysPlugin = 0;
+			//globalHotkeysPlugin = 0;
 			break;
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:

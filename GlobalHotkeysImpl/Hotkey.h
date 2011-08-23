@@ -36,13 +36,13 @@ public:
 
 	std::string toString() const;
 
-	bool IsEmpty() const { return (m_keyCode != 0); }
+	bool IsEmpty() const { return (m_keyCode == 0); }
 
 private:
 	unsigned char m_keyCode;
 	unsigned char m_modifiers;
 
-	static std::string GetKeyName(unsigned char keyCode);
+	static std::string GetKeyName(unsigned char keyCode, bool extended = false);
 };
 
 #endif /* HOTKEY_H */

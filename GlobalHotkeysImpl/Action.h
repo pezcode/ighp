@@ -31,7 +31,7 @@ class Action
 public:
 	enum Type
 	{
-		eActionNotDefined = 0,
+		eActionNotDefined,
 		eActionPlayPause,
 		eActionNextTrack,
 		eActionPreviousTrack,

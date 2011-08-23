@@ -59,7 +59,7 @@ public:
 
 	static GlobalHotkeysPlugin& Instance() { return *((GlobalHotkeysPlugin*)GetApp()); }
 
-	GlobalHotkeysDialog& GetSettingsDialog() { return m_settingsDialog; }
+	GlobalHotkeysDialog GetSettingsDialog() { return GlobalHotkeysDialog(IDD_GH_DIALOG); }
 
 	bool UnregisterHotkeys();
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);

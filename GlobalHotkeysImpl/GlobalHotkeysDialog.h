@@ -47,7 +47,7 @@ public:
 
 	void SetHotKey(BYTE bKeyCode, BYTE bModifier)
 	{
-		SendMessage(HKM_SETHOTKEY, 0, MAKEWORD(bKeyCode, bModifier));
+		SendMessage(HKM_SETHOTKEY, MAKEWORD(bKeyCode, bModifier), 0);
 	}
 
 	void SetRules(WORD wInvalid, WORD wReplacement)

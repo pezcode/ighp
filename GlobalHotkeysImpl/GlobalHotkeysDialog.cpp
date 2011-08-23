@@ -42,7 +42,7 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 
 BOOL GlobalHotkeysDialog::OnInitDialog()
 {
-	Action::InitNames();
+	//Action::InitNames();
 
 	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
 	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
@@ -185,4 +185,5 @@ void GlobalHotkeysDialog::OnSelectedListItemChanged(LPNMLISTVIEW lpStateChange)
 	Hotkey hotkey = m_hotkeys[action];
 
 	m_hotkeyInput.SetHotKey(hotkey.GetKeyCode(), hotkey.GetModifiers());
+	//this->SendMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
 }

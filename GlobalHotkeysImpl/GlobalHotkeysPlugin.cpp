@@ -117,8 +117,6 @@ bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& 
 				bMod |= MOD_SHIFT;
 			if(hotkey.GetModifiers() & HOTKEYF_ALT)
 				bMod |= MOD_ALT;
-			if(hotkey.GetModifiers() & HOTKEYF_EXT)
-				bMod |= MOD_ALT; // :s
 			RegisterHotKey(m_mainWindow.GetHwnd(), m_hotkeys.size(), bMod, hotkey.GetKeyCode());
 			m_hotkeys.push_back(Action(action));
 		}

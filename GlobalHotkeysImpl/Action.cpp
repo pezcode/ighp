@@ -25,6 +25,8 @@
 #include <windows.h>
 #include <comutil.h>
 
+#include <utility>
+
 #include "iTunesCOMInterface.h"
 
 std::map<Action::Type, std::string> Action::names;
@@ -91,22 +93,24 @@ void Action::InitNames()
 	if(names.size() != 0)
 		return;
 
-	names[eActionPlayPause] = "PlayPause";
-	names[eActionNextTrack] = "NextTrack";
-	names[eActionPreviousTrack] = "PreviousTrack";
-	names[eActionRandom] = "ToggleRandom";
-	names[eActionRepeat] = "ToggleRepeat";
-	names[eActionSongRatingClear] = "SongRatingClear";
-	names[eActionSongRating1] = "SongRating1";
-	names[eActionSongRating2] = "SongRating2";
-	names[eActionSongRating3] = "SongRating3";
-	names[eActionSongRating4] = "SongRating4";
-	names[eActionSongRating5] = "SongRating5";
-	names[eActionShowHide] = "ShowHide";
-	names[eActionVolumeUp] = "VolumeUp";
-	names[eActionVolumeDown] = "VolumeDown";
-	names[eActionToggleMute] = "ToggleMute";
-	names[eActionQuit] = "Quit";
+	//names.insert(std::make_pair(eActionPlayPause, std::string("PlayPause")));
+	
+	names[eActionPlayPause] = std::string("PlayPause");
+	names[eActionNextTrack] = std::string("NextTrack");
+	names[eActionPreviousTrack] = std::string("PreviousTrack");
+	names[eActionRandom] = std::string("ToggleRandom");
+	names[eActionRepeat] = std::string("ToggleRepeat");
+	names[eActionSongRatingClear] = std::string("SongRatingClear");
+	names[eActionSongRating1] = std::string("SongRating1");
+	names[eActionSongRating2] = std::string("SongRating2");
+	names[eActionSongRating3] = std::string("SongRating3");
+	names[eActionSongRating4] = std::string("SongRating4");
+	names[eActionSongRating5] = std::string("SongRating5");
+	names[eActionShowHide] = std::string("ShowHide");
+	names[eActionVolumeUp] = std::string("VolumeUp");
+	names[eActionVolumeDown] = std::string("VolumeDown");
+	names[eActionToggleMute] = std::string("ToggleMute");
+	names[eActionQuit] = std::string("Quit");
 }
 
 void Action::PlayPause()
