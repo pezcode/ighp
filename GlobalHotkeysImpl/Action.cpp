@@ -39,14 +39,17 @@ void Action::Perform() const
 	case eActionPlayPause:
 		PlayPause();
 		break;
-	case eActionStop:
-		Stop();
+	case eActionNextTrack:
+		NextTrack();
 		break;
 	case eActionPreviousTrack:
 		PreviousTrack();
 		break;
-	case eActionNextTrack:
-		NextTrack();
+	case eActionFastForward:
+		FastForward();
+		break;
+	case eActionRewind:
+		Rewind();
 		break;
 	case eActionRandom:
 		Random();
@@ -98,9 +101,10 @@ void Action::InitNames()
 		return;
 	
 	names[eActionPlayPause] = std::string("Play/Pause");
-	names[eActionStop]      = std::string("Stop");
 	names[eActionNextTrack] = std::string("Next Track");
 	names[eActionPreviousTrack] = std::string("Previous Track");
+	names[eActionFastForward] = std::string("Fast Forward");
+	names[eActionRewind] = std::string("Rewind");
 	names[eActionRandom] = std::string("Toggle Random");
 	names[eActionRepeat] = std::string("Toggle Repeat");
 	names[eActionSongRatingClear] = std::string("Clear Song Rating");
@@ -109,10 +113,10 @@ void Action::InitNames()
 	names[eActionSongRating3] = std::string("Rate Song: 3 Stars");
 	names[eActionSongRating4] = std::string("Rate Song: 4 Stars");
 	names[eActionSongRating5] = std::string("Rate Song: 5 Stars");
-	names[eActionShowHide] = std::string("Show/Hide");
 	names[eActionVolumeUp] = std::string("Increase Volume");
 	names[eActionVolumeDown] = std::string("Decrease Volume");
 	names[eActionToggleMute] = std::string("Toggle Mute");
+	names[eActionShowHide] = std::string("Show/Hide");
 	names[eActionQuit] = std::string("Quit");
 }
 
@@ -128,24 +132,6 @@ void Action::PlayPause()
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->PlayPause();
-		iITunes->Release();
-	}
-
-	CoUninitialize();
-}
-
-void Action::Stop()
-{
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
-
-	CoInitialize(0);
-
-	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
-
-	if(hRes == S_OK && iITunes) {
-		iITunes->Stop();
 		iITunes->Release();
 	}
 
@@ -183,6 +169,43 @@ void Action::PreviousTrack()
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->PreviousTrack();
+		iITunes->Release();
+	}
+
+	CoUninitialize();
+}
+
+void Action::FastForward()
+{
+	IiTunes* iITunes = 0;
+	HRESULT hRes;
+
+	CoInitialize(0);
+
+	// Create itunes interface
+    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+
+	if(hRes == S_OK && iITunes) {
+		iITunes->FastForward();
+		iITunes->Release();
+	}
+
+	CoUninitialize();
+
+}
+
+void Action::Rewind()
+{
+	IiTunes* iITunes = 0;
+	HRESULT hRes;
+
+	CoInitialize(0);
+
+	// Create itunes interface
+    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+
+	if(hRes == S_OK && iITunes) {
+		iITunes->Rewind();
 		iITunes->Release();
 	}
 

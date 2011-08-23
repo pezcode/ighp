@@ -34,9 +34,10 @@ public:
 	{
 		eActionNotDefined,
 		eActionPlayPause,
-		eActionStop,
 		eActionNextTrack,
 		eActionPreviousTrack,
+		eActionFastForward,
+		eActionRewind,
 		eActionRandom,
 		eActionRepeat,
 		eActionSongRatingClear,
@@ -45,10 +46,10 @@ public:
 		eActionSongRating3,
 		eActionSongRating4,
 		eActionSongRating5,
-		eActionShowHide,
 		eActionVolumeUp,
 		eActionVolumeDown,
 		eActionToggleMute,
+		eActionShowHide,
 		eActionQuit
 	};
 
@@ -70,9 +71,10 @@ private:
 
 	// Actions
 	static void PlayPause();
-	static void Stop();
 	static void NextTrack();
 	static void PreviousTrack();
+	static void FastForward();
+	static void Rewind();
 	static void Random();
 	static void Repeat();
 	static void ClearSongRating();
