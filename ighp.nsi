@@ -6,8 +6,8 @@
 ;======================================================
 ; Installer Information
  
-Name "iTunes Global Hotkeys Plugin v0.0.4"
-OutFile "ighp_0.0.4.exe"
+Name "iTunes Global Hotkeys Plugin v0.1.0"
+OutFile "ighp_0.1.0.exe"
 InstallDir "$PROGRAMFILES\iTunes\Plug-ins"
 
 ;======================================================
@@ -43,8 +43,7 @@ Section "Plugin" pluginSection
 
   SetOutPath $INSTDIR
   
-  File "release\GlobalHotkeysPlugin.dll"
-  File "release\GlobalHotkeysImpl.dll"
+  File "release\GlobalHotkeys.dll"
   File "/oname=Global Hotkeys License.txt" "License.txt"
   File "/oname=Global Hotkeys Readme.txt" "Readme.txt" 
   ;Create uninstaller
@@ -56,9 +55,9 @@ Section "Plugin" pluginSection
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
                    "Publisher" "Stefan Cosma"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "URLInfoAbout" "http://ighp.berlios.de"
+                   "URLInfoAbout" "http://github.com/pezcode/ighp"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "DisplayVersion " "0.0.3" 
+                   "DisplayVersion " "0.1.0" 
   WriteRegDWORD  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
                       "NoModify" 1
   WriteRegDWORD  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
@@ -69,8 +68,7 @@ SectionEnd
 Section "Uninstall"
 
   ;Delete plugin files
-  Delete "$INSTDIR\GlobalHotkeysPlugin.dll"
-  Delete "$INSTDIR\GlobalHotkeysImpl.dll"
+  Delete "$INSTDIR\GlobalHotkeys.dll"
   Delete "$INSTDIR\Global Hotkeys License.txt"
   Delete "$INSTDIR\Global Hotkeys Readme.txt"
   Delete "$INSTDIR\UninstallGlobalHotkeys.exe"
@@ -78,4 +76,3 @@ Section "Uninstall"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp"
 
 SectionEnd
-
