@@ -54,6 +54,7 @@ private:
 
 class GlobalHotkeysPlugin : public CWinApp
 {
+friend class GlobalHotkeysWnd;
 public:
 	explicit GlobalHotkeysPlugin(HINSTANCE dllHandle); 
 	virtual ~GlobalHotkeysPlugin();
@@ -65,7 +66,7 @@ public:
 	bool UnregisterHotkeys();
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
 
-	const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
+	//const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
 
 	static const int version = 10;
 

@@ -84,7 +84,7 @@ LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 void GlobalHotkeysWnd::OnHotkey(WPARAM wParam, LPARAM lParam)
 {
-	const std::vector<Action>& hotkeys = GlobalHotkeysPlugin::Instance().GetHotKeys();
+	const std::vector<Action>& hotkeys = GlobalHotkeysPlugin::Instance().m_hotkeys;
 	if(wParam >= 0 && wParam < hotkeys.size())
 	{
 		hotkeys[wParam].Perform();
@@ -98,10 +98,22 @@ void GlobalHotkeysWnd::OnDestroy()
 
 void GlobalHotkeysPlugin::ShowSettingsDialog(HWND Parent)
 {
-	GlobalHotkeysDialog dlg(FromHandle(Parent));
-	dlg.AddPage(new CSettingsPage);
-	dlg.AddPage(new CAboutPage);
-	dlg.DoModal();
+static GlobalHotkeysDialog* dlg = 0;
+
+	if(!dlg)
+	{
+		dlg = new GlobalHotkeysDialog(Parent ? FromHandle(Parent) : CWnd().GetDesktopWindow());
+		dlg->AddPage(new CSettingsPage);
+		dlg->AddPage(new CAboutPage);
+		dlg->DoModal();
+		dlg = 0;
+	}
+	else
+	{
+		// If we don't have a parent window (only Desktop)
+		// it acts like modeless, so set focus
+		dlg->SetActiveWindow();
+	}
 }
 
 bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys)
