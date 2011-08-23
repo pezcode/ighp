@@ -150,7 +150,11 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 
 		case kVisualPluginConfigureMessage:
 			// get iTunes window as dialog parent
-			ShowSettingsDialog(FindWindow("iTunes", NULL));
+			HWND Parent;
+			Parent = NULL;
+			// Doesn't work anymore with 10.4
+			// Parent = FindWindow("iTunes", NULL);
+			ShowSettingsDialog(Parent);
 			break;
 
 		/*
