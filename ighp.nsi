@@ -53,9 +53,9 @@ Section "Plugin" pluginSection
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
                    "UninstallString" "$\"$INSTDIR\UninstallGlobalHotkeys.exe$\""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "Publisher" "Stefan Cosma"
+                   "Publisher" "pezcode"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "URLInfoAbout" "http://github.com/pezcode/ighp"
+                   "URLInfoAbout" "https://github.com/pezcode/ighp"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
                    "DisplayVersion " "0.1.0" 
   WriteRegDWORD  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \

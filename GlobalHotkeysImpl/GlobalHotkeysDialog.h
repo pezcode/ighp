@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
+ * Copyright (c) 2011 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +71,7 @@ protected:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
 	virtual void OnOK();
+	virtual void EndDialog(INT_PTR nResult);
 
 private:
 	CListView m_hotkeysListView;

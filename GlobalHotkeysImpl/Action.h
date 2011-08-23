@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
+ * Copyright (c) 2011 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +34,7 @@ public:
 	{
 		eActionNotDefined,
 		eActionPlayPause,
+		eActionStop,
 		eActionNextTrack,
 		eActionPreviousTrack,
 		eActionRandom,
@@ -68,6 +70,7 @@ private:
 
 	// Actions
 	static void PlayPause();
+	static void Stop();
 	static void NextTrack();
 	static void PreviousTrack();
 	static void Random();

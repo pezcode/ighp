@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
+ * Copyright (c) 2011 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,9 @@ void Action::Perform() const
 	{
 	case eActionPlayPause:
 		PlayPause();
+		break;
+	case eActionStop:
+		Stop();
 		break;
 	case eActionPreviousTrack:
 		PreviousTrack();
@@ -93,21 +97,22 @@ void Action::InitNames()
 	if(names.size() != 0)
 		return;
 	
-	names[eActionPlayPause] = std::string("PlayPause");
-	names[eActionNextTrack] = std::string("NextTrack");
-	names[eActionPreviousTrack] = std::string("PreviousTrack");
-	names[eActionRandom] = std::string("ToggleRandom");
-	names[eActionRepeat] = std::string("ToggleRepeat");
-	names[eActionSongRatingClear] = std::string("SongRatingClear");
-	names[eActionSongRating1] = std::string("SongRating1");
-	names[eActionSongRating2] = std::string("SongRating2");
-	names[eActionSongRating3] = std::string("SongRating3");
-	names[eActionSongRating4] = std::string("SongRating4");
-	names[eActionSongRating5] = std::string("SongRating5");
-	names[eActionShowHide] = std::string("ShowHide");
-	names[eActionVolumeUp] = std::string("VolumeUp");
-	names[eActionVolumeDown] = std::string("VolumeDown");
-	names[eActionToggleMute] = std::string("ToggleMute");
+	names[eActionPlayPause] = std::string("Play/Pause");
+	names[eActionStop]      = std::string("Stop");
+	names[eActionNextTrack] = std::string("Next Track");
+	names[eActionPreviousTrack] = std::string("Previous Track");
+	names[eActionRandom] = std::string("Toggle Random");
+	names[eActionRepeat] = std::string("Toggle Repeat");
+	names[eActionSongRatingClear] = std::string("Clear Song Rating");
+	names[eActionSongRating1] = std::string("Rate Song: 1 Star");
+	names[eActionSongRating2] = std::string("Rate Song: 2 Stars");
+	names[eActionSongRating3] = std::string("Rate Song: 3 Stars");
+	names[eActionSongRating4] = std::string("Rate Song: 4 Stars");
+	names[eActionSongRating5] = std::string("Rate Song: 5 Stars");
+	names[eActionShowHide] = std::string("Show/Hide");
+	names[eActionVolumeUp] = std::string("Increase Volume");
+	names[eActionVolumeDown] = std::string("Decrease Volume");
+	names[eActionToggleMute] = std::string("Toggle Mute");
 	names[eActionQuit] = std::string("Quit");
 }
 
@@ -123,6 +128,24 @@ void Action::PlayPause()
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->PlayPause();
+		iITunes->Release();
+	}
+
+	CoUninitialize();
+}
+
+void Action::Stop()
+{
+	IiTunes* iITunes = 0;
+	HRESULT hRes;
+
+	CoInitialize(0);
+
+	// Create itunes interface
+    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+
+	if(hRes == S_OK && iITunes) {
+		iITunes->Stop();
 		iITunes->Release();
 	}
 
@@ -171,7 +194,6 @@ void Action::Random()
 	IiTunes* iITunes = 0;
 	IITPlaylist* iIPlaylist = 0;
 	HRESULT hRes;
-	VARIANT_BOOL suffle;
 
 	CoInitialize(0);
 
@@ -181,12 +203,11 @@ void Action::Random()
 	if(hRes == S_OK && iITunes) {
 		iITunes->get_CurrentPlaylist(&iIPlaylist);
 		if (iIPlaylist) {
-			iIPlaylist->get_Shuffle(&suffle);
-			
-			if (suffle)
-				iIPlaylist->put_Shuffle(0); // 0 == false
-			else
-				iIPlaylist->put_Shuffle(-1);// -1 == true
+			VARIANT_BOOL isShuffle = VARIANT_FALSE;
+			iIPlaylist->get_Shuffle(&isShuffle);
+
+			isShuffle = (isShuffle == VARIANT_FALSE) ? VARIANT_TRUE : VARIANT_FALSE;
+			iIPlaylist->put_Shuffle(isShuffle);
 
 			iIPlaylist->Release();
 		}
@@ -228,11 +249,9 @@ void Action::Repeat()
 			}
 			
 			iIPlaylist->put_SongRepeat(repeatMode);
-			
 
 			iIPlaylist->Release();
 		}
-
 		iITunes->Release();
 	}
 
@@ -310,10 +329,10 @@ void Action::ShowHide()
 		iITunes->get_BrowserWindow(&iITBrowserWindow);
 
 		if(iITBrowserWindow) {
-			VARIANT_BOOL isVisible = 0;
+			VARIANT_BOOL isVisible = VARIANT_FALSE;
 			iITBrowserWindow->get_Minimized(&isVisible);
 
-			isVisible = (isVisible == 0) ? -1 : 0;
+			isVisible = (isVisible == VARIANT_FALSE) ? VARIANT_TRUE : VARIANT_FALSE;
 			iITBrowserWindow->put_Minimized(isVisible);
 
 			iITBrowserWindow->Release();
@@ -369,10 +388,10 @@ void Action::ToggleMute()
     hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
-		VARIANT_BOOL isMuted = 0;
+		VARIANT_BOOL isMuted = VARIANT_FALSE;
 		iITunes->get_Mute(&isMuted);
 		
-		isMuted = (isMuted == 0) ? -1 : 0;
+		isMuted = (isMuted == VARIANT_FALSE) ? VARIANT_TRUE : VARIANT_FALSE;
 		iITunes->put_Mute(isMuted);
 
 		iITunes->Release();

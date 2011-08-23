@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
+ * Copyright (c) 2011 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,9 +125,14 @@ void GlobalHotkeysDialog::OnClear()
 void GlobalHotkeysDialog::OnOK()
 {
 	OnApply();
-	// Enable hotkeys again
-	GlobalHotkeysPlugin::Instance().RegisterHotkeys(m_hotkeys);
 	CDialog::OnOK();
+}
+
+void GlobalHotkeysDialog::EndDialog(INT_PTR nResult)
+{
+	// Enable hotkeys again
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+	CDialog::EndDialog(nResult);
 }
 
 void GlobalHotkeysDialog::OnApply()

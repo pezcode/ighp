@@ -14,28 +14,30 @@ or hidden.
 The following actions are supported:
 
 Action	           Description
-PlayPause          toggle play/pause
-NextTrack          advance to the next track in playlist
-PreviousTrack      go back to previous track in playlist
-ToggleRandom       toggle random on/off
-ToggleRepeat       toggle repeat on/off
-SongRatingClear    clear rating for the selected song
-SongRating1        set rating to one star
-SongRating2        set rating to two stars
-SongRating3        set rating to three stars
-SongRating4        set rating to four stars
-SongRating5        set rating to five stars
-ShowHide           minimize/restore player window
-VolumeUp           increase volume level
-VolumeDown         decrease volume level
-ToggleMute         toggle mute/unmute
-Quit               exit iTunes
+
+Play/Pause          toggle play/pause
+Stop                stop playback
+Next Track          next track in playlist
+Previous Track      previous track in playlist
+Toggle Random       toggle random on/off
+Toggle Repeat       toggle repeat on/off
+Clear Song Rating   clear rating for the selected song
+Rate Song: 1 Star   Set rating for the selected song
+Rate Song: 2 Stars
+Rate Song: 3 Stars
+Rate Song: 4 Stars
+Rate Song: 5 Stars
+Show/Hide           minimize/restore player window
+Increase Volume     increase volume in 5% steps
+Decrease Volume     decrease volume in 5% steps
+Toggle Mute         toggle mute/unmute
+Quit                exit iTunes
 
 
  * Download and Install
 
 
-The latest release of the plugin can be found on https://github.com/pezcode/ighp.
+The latest release of the plugin can be found at https://github.com/pezcode/ighp.
 You can choose between the installer, the binary package or the source package.
 The source code can be compiled using Visual C++ 2008 Express and above. If you
 downloaded the dll file or the source code you must copy it to the iTunes
@@ -54,7 +56,7 @@ To set a hotkey:
  - click 'Set'
 To delete a hotkey:
  - select the action you want to remove
- - Click 'Clear'
+ - click 'Clear'
 
 
  * License

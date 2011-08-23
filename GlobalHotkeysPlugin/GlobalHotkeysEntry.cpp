@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
+ * Copyright (c) 2011 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +41,8 @@
 /*
 	typedef's, struct's, enum's, etc.
 */
-const char kTVisualPluginName[] = "Global Hotkeys - http://ighp.berlios.de";
-const OSType kTVisualPluginCreator = 'SCos';
+const char kTVisualPluginName[] = "Global Hotkeys";
+const OSType kTVisualPluginCreator = 'pzcd';
 
 const UInt8 kTVisualPluginMajorVersion = 0;
 const UInt8 kTVisualPluginMinorVersion = 1;
@@ -52,7 +53,7 @@ static GlobalHotkeysPlugin* globalHotkeysPlugin = 0;
 
 struct VisualPluginData
 {
-	// plugin specific data, needed for iTunes APIs
+	// needed for iTunes APIs
 	void* appCookie;
 	ITAppProcPtr appProc;
 
@@ -88,12 +89,11 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 */
 void ShowSettingsDialog(HWND parent)
 {
-	// we should be doing synchronization here though
+	// we should probably be doing synchronization here
 	GlobalHotkeysDialog dialog = globalHotkeysPlugin->GetSettingsDialog();
 	if(parent)
 		dialog.SetDlgParent(FromHandle(parent));
 	dialog.DoModal();
-	dialog.SetDlgParent(NULL);
 }
 
 /*
@@ -284,7 +284,7 @@ extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, Plugi
 }
 
 /*
-	Window entrypoint
+	Windows entrypoint
 */
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
