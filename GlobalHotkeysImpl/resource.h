@@ -4,7 +4,6 @@
 //
 #define IDD_GH_SETTINGS                 101
 #define IDD_GH_ABOUT                    102
-#define IDAPPLY                         1001
 #define IDC_HOTKEYS_LIST                1002
 #define IDC_SET                         1005
 #define IDC_CLEAR                       1006

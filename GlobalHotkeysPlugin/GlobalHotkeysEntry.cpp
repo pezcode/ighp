@@ -85,15 +85,6 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 }
 
 /*
-	ShowSettingsDialog
-*/
-void ShowSettingsDialog(HWND parent)
-{
-	// we should probably be doing synchronization here
-	globalHotkeysPlugin->ShowSettingsDialog(parent);
-}
-
-/*
 	VisualPluginHandler
 */
 static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* messageInfo, void* refCon)
@@ -154,7 +145,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			Parent = NULL;
 			// Doesn't work anymore with 10.4
 			// Parent = FindWindow("iTunes", NULL);
-			ShowSettingsDialog(Parent);
+			globalHotkeysPlugin->ShowSettingsDialog(Parent)
 			break;
 
 		/*

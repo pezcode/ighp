@@ -23,7 +23,7 @@
 
 #include "GlobalHotkeysPlugin.h"
 
-GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle)
+GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(0)
 {
 	SetResourceHandle(dllHandle);
 	m_mainWindow.Create();
@@ -31,6 +31,8 @@ GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle)
 
 GlobalHotkeysPlugin::~GlobalHotkeysPlugin()
 {
+	if(m_settingsDialog)
+		m_settingsDialog->Destroy();
 	m_mainWindow.Destroy();
 }
 
@@ -98,21 +100,19 @@ void GlobalHotkeysWnd::OnDestroy()
 
 void GlobalHotkeysPlugin::ShowSettingsDialog(HWND Parent)
 {
-static GlobalHotkeysDialog* dlg = 0;
-
-	if(!dlg)
+	if(!m_settingsDialog)
 	{
-		dlg = new GlobalHotkeysDialog(Parent ? FromHandle(Parent) : CWnd().GetDesktopWindow());
-		dlg->AddPage(new CSettingsPage);
-		dlg->AddPage(new CAboutPage);
-		dlg->DoModal();
-		dlg = 0;
+		m_settingsDialog = new GlobalHotkeysDialog(Parent ? FromHandle(Parent) : CWnd().GetDesktopWindow());
+		m_settingsDialog->AddPage(new CSettingsPage);
+		m_settingsDialog->AddPage(new CAboutPage);
+		m_settingsDialog->DoModal();
+		m_settingsDialog = 0;
 	}
 	else
 	{
-		// If we don't have a parent window (only Desktop)
-		// it acts like modeless, so set focus
-		dlg->SetActiveWindow();
+		// If we don't have a parent window it acts like modeless,
+		// so set focus
+		m_settingsDialog->SetActiveWindow();
 	}
 }
 

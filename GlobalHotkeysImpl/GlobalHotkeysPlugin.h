@@ -66,12 +66,11 @@ public:
 	bool UnregisterHotkeys();
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
 
-	//const std::vector<Action>& GetHotKeys() { return m_hotkeys; }
-
 	static const int version = 10;
 
 private:
 	GlobalHotkeysWnd m_mainWindow;
+	GlobalHotkeysDialog* m_settingsDialog;
 
 	std::vector<Action> m_hotkeys;
 };
