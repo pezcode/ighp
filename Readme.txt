@@ -1,6 +1,6 @@
 
 Global Hotkeys for iTunes v0.1.0
-https://github.com/pezcode/ighp
+http://pezcode.github.com/ighp/
 
 
 iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger 
@@ -12,8 +12,6 @@ or hidden.
 
 
 The following actions are supported:
-
-Action	           Description
 
 Play/Pause          toggle play/pause
 Next Track          next track in playlist
@@ -38,10 +36,10 @@ Quit                exit iTunes
  * Download and Install
 
 
-The latest release of the plugin can be found at https://github.com/pezcode/ighp.
+The latest release of the plugin can be found at http://pezcode.github.com/ighp/.
 You can choose between the installer, the binary package or the source package.
 The source code can be compiled using Visual C++ 2008 Express and above. If you
-downloaded the dll file or the source code you must copy it to the iTunes
+downloaded the dll file or compiled it from source you must copy it to the iTunes
 plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.
 
 
