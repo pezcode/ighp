@@ -4,18 +4,36 @@
 !include "MUI2.nsh"
 
 ;======================================================
+;Version Information
+
+!define UNINST_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp"
+
+!define APP_NAME "iTunes Global Hotkeys Plugin"
+!define VERSION "0.1.0"
+
+VIProductVersion "${VERSION}.0"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${APP_NAME}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (c) 2011 Stefan Cosma, pezcode"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${APP_NAME} Setup"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}.0"
+
+;======================================================
 ; Installer Information
  
-Name "iTunes Global Hotkeys Plugin v0.1.0"
-OutFile "ighp_0.1.0.exe"
+Name "${APP_NAME}"
+OutFile "ighp_${VERSION}.exe"
 InstallDir "$PROGRAMFILES\iTunes\Plug-ins"
+
+;======================================================
+; Request application privileges for Windows Vista
+RequestExecutionLevel admin
 
 ;======================================================
 ; Modern Interface Configuration
  
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE
-!define MUI_FINISHPAGE_TEXT "Thank you for installing iTunes Global Hotkeys Plugin. You need to restart iTunes before using the plugin"
+!define MUI_FINISHPAGE_TEXT "Thank you for installing ${APP_NAME}. You need to restart iTunes before using the plugin."
 
 ;======================================================
 ; Pages
@@ -37,31 +55,60 @@ InstallDir "$PROGRAMFILES\iTunes\Plug-ins"
 ;======================================================
 ; Sections
 
+Section "VersionCheck" versionCheck
+
+  Push $0
+
+  ReadRegStr $0 HKLM "${UNINST_PATH}" "DisplayVersion " ; old (pre 0.1.0) versions wrote the wrong reg key
+  StrCmp $0 "" check_new
+
+  ; they use 2 dlls with other names, so we can't replace them
+  ; enforce uninstall to prevent plugin from being loaded twice
+  goto abort_version
+
+check_new:
+
+  ReadRegStr $0 HKLM "${UNINST_PATH}" "DisplayVersion"
+  StrCmp $0 "" end ; not found or error
+
+  ; specific version checks here
+  ;StrCmp $0 "0.0.4" abort_version
+  ;StrCmp $0 "0.0.3" abort_version
+  ;StrCmp $0 "0.0.2" abort_version
+  ;StrCmp $0 "0.0.1" abort_version
+  
+  goto end
+  
+abort_version:
+
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Found an incompatible version of ${APP_NAME}$\r$\n\
+                                   Please remove it before installing a new version."
+  Quit
+
+end:
+
+  Pop $0
+
+SectionEnd
+
 Section "Plugin" pluginSection
-  ; Version checking logic
-  ; TODO: for the next version
 
   SetOutPath $INSTDIR
   
   File "release\GlobalHotkeys.dll"
   File "/oname=Global Hotkeys License.txt" "License.txt"
   File "/oname=Global Hotkeys Readme.txt" "Readme.txt" 
+  
   ;Create uninstaller
+  
   WriteUninstaller "$INSTDIR\UninstallGlobalHotkeys.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "DisplayName" "iTunes Global Hotkeys Plugin"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "UninstallString" "$\"$INSTDIR\UninstallGlobalHotkeys.exe$\""
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "Publisher" "pezcode"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "URLInfoAbout" "https://github.com/pezcode/ighp"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                   "DisplayVersion " "0.1.0" 
-  WriteRegDWORD  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                      "NoModify" 1
-  WriteRegDWORD  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp" \
-                      "NoRepair" 1
+  WriteRegStr HKLM "${UNINST_PATH}" "DisplayName" "iTunes Global Hotkeys Plugin"
+  WriteRegStr HKLM "${UNINST_PATH}" "UninstallString" "$\"$INSTDIR\UninstallGlobalHotkeys.exe$\""
+  WriteRegStr HKLM "${UNINST_PATH}" "Publisher" "pezcode"
+  WriteRegStr HKLM "${UNINST_PATH}" "URLInfoAbout" "http://pezcode.github.com/ighp/"
+  WriteRegStr HKLM "${UNINST_PATH}" "DisplayVersion" "${VERSION}" 
+  WriteRegDWORD HKLM "${UNINST_PATH}" "NoModify" 1
+  WriteRegDWORD HKLM "${UNINST_PATH}" "NoRepair" 1
 
 SectionEnd
 
