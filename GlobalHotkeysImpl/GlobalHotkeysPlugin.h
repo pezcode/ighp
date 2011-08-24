@@ -67,6 +67,7 @@ public:
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
 
 	static const int version = 10;
+	static const char version_str[];
 
 private:
 	GlobalHotkeysWnd m_mainWindow;

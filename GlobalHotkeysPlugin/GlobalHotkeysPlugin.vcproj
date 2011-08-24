@@ -138,6 +138,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
 				LinkIncremental="1"
+				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

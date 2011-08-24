@@ -1,6 +1,7 @@
 0.1.0:
 
  + Settings dialog accessible from iTunes Visualizer menu
+ + About dialog
  + Options are saved inside iTunes
  + New actions: Fast Forward, Rewind, Quit
  * Merged the two DLLs into one

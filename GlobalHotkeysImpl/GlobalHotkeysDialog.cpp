@@ -23,7 +23,9 @@
 
 #include "GlobalHotkeysPlugin.h"
 #include "GlobalHotkeysDialog.h"
-#include "PluginSettings.h" 
+#include "PluginSettings.h"
+
+const char CAboutPage::URL[] = "http://pezcode.github.com/ighp/";
 
 void CHotkey::PreCreate(CREATESTRUCT &cs)
 {
@@ -52,15 +54,100 @@ LRESULT CHotkey::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return WndProcDefault(uMsg, wParam, lParam);
 }
 
-
 void GlobalHotkeysDialog::OnInitialUpdate()
 {
 	CenterWindow();
 }
 
+void CAboutPage::MakeItalic(CWnd* Window, bool italic)
+{
+	CFont* font = Window->GetFont();
+	LOGFONT lf = font->GetLogFont();
+	lf.lfItalic = italic ? TRUE : FALSE;
+	lf.lfOutPrecision =  italic ? OUT_TT_ONLY_PRECIS : lf.lfOutPrecision;
+	lf.lfQuality = italic ? PROOF_QUALITY : lf.lfQuality;
+	CFont fontNew(&lf);
+	Window->SetFont(&fontNew, false);
+}
+
 BOOL CAboutPage::OnInitDialog()
 {
+	m_Title.AttachDlgItem(IDC_TITLE, this);
+	m_Version.AttachDlgItem(IDC_VERSION, this);
+	m_URL.AttachDlgItem(IDC_URL, this);
+
+	m_Version.SetWindowText(GlobalHotkeysPlugin::version_str);
+
+	MakeBold(&m_Title, true);
+	Resize(&m_Title, 3);
+
+	InitURLControl();
+
 	return TRUE;
+}
+
+LRESULT CAboutPage::OnNotify(WPARAM wParam, LPARAM lParam)
+{
+	switch(LPNMHDR(lParam)->idFrom)
+	{
+	case IDC_URL:
+		switch(LPNMHDR(lParam)->code)
+		{
+		case NM_CLICK:  // mouse
+		case NM_RETURN: // keyboard
+			OnURL(PNMLINK(lParam));
+			return TRUE;
+		}
+		break;
+	}
+
+	return CPropertyPage::OnNotify(wParam, lParam);
+}
+
+void CAboutPage::OnURL(const NMLINK* lpClick)
+{
+	LITEM item = lpClick->item;
+	if(item.iLink == 0)
+	{
+		ShellExecuteW(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
+	}
+}
+
+void CAboutPage::InitURLControl()
+{
+	// Set the text first so the SysLink controls which URL is which iLink
+	std::string title = std::string("<a>") + URL + "</a>";
+	m_URL.SetWindowText(title.c_str());
+
+	LITEM item;
+	item.mask = LIF_ITEMINDEX | LIF_URL;
+	item.iLink = 0;
+	wcscpy(item.szUrl, A2W(URL));
+	m_URL.SendMessage(LM_SETITEM, NULL, (LPARAM)&item);
+}
+
+void CAboutPage::MakeBold(CWnd* Window, bool bold)
+{
+	CFont* font = Window->GetFont();
+	LOGFONT lf = font->GetLogFont();
+	lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
+	CFont fontNew(&lf);
+	Window->SetFont(&fontNew, false);
+}
+
+void CAboutPage::Resize(CWnd* Window, int delta)
+{
+	CFont* font = Window->GetFont();
+	LOGFONT lf = font->GetLogFont();
+	if(lf.lfHeight)
+	{
+		if(lf.lfHeight < 0)
+			lf.lfHeight -= delta;
+		else
+			lf.lfHeight += delta;
+	}
+	CFont fontNew(&lf);
+	Window->SetFont(&fontNew, false);
 }
 
 BOOL CSettingsPage::OnInitDialog()
@@ -92,7 +179,9 @@ BOOL CSettingsPage::OnCommand(WPARAM wParam, LPARAM lParam)
 		OnClear();
 		return TRUE;
     }
+	
 	return FALSE;
+	//return CPropertyPage::OnCommand(wParam, lParam);
 }
 
 LRESULT CSettingsPage::OnNotify(WPARAM wParam, LPARAM lParam)

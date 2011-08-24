@@ -76,11 +76,8 @@ static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
 	srcRect.right = destRect->right;
 	srcRect.bottom = destRect->bottom;
 
-	HDC hdc = GetDC(destPort);		
-	HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
-	FillRect(hdc, &srcRect, hBrush);
-
-	DeleteObject(hBrush);
+	HDC hdc = GetDC(destPort);
+	FillRect(hdc, &srcRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
 	ReleaseDC(destPort, hdc);
 }
 
@@ -145,7 +142,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			Parent = NULL;
 			// Doesn't work anymore with 10.4
 			// Parent = FindWindow("iTunes", NULL);
-			globalHotkeysPlugin->ShowSettingsDialog(Parent)
+			globalHotkeysPlugin->ShowSettingsDialog(Parent);
 			break;
 
 		/*

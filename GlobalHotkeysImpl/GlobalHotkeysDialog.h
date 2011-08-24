@@ -101,9 +101,22 @@ public:
 	virtual ~CAboutPage() { }
 
 	virtual BOOL OnInitDialog();
+	virtual LRESULT OnNotify(WPARAM wParam, LPARAM lParam);
 
 private:
+	CStatic m_Title;
+	CStatic m_Version;
+	CWnd m_URL;
 
+	static const char URL[];
+
+	void OnURL(const NMLINK* lpClick);
+
+	void InitURLControl();
+
+	void MakeBold(CWnd* Window, bool bold);
+	void Resize(CWnd* Window, int delta);
+	void MakeItalic(CWnd* Window, bool italic);
 };
 
 class GlobalHotkeysDialog : public CPropertySheet

@@ -57,7 +57,12 @@ IDD_GH_ABOUT DIALOGEX 0, 0, 214, 187
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "About",IDC_STATIC,88,87,20,8
+    CTEXT           "iTunes Global Hotkeys Plugin",IDC_TITLE,7,18,200,15,SS_CENTERIMAGE
+    CONTROL         "URL",IDC_URL,"SysLink",WS_TABSTOP,57,55,112,14
+    RTEXT           "Version",IDC_STATIC,7,39,101,11,SS_CENTERIMAGE
+    CTEXT           "iTunes Global Hotkeys Plugin is released under the\nMIT/X Consortium License.",IDC_STATIC,7,160,200,20
+    CTEXT           "iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger different actions using predefined shortcuts even if the player is minimized or hidden.",IDC_STATIC,7,77,200,73
+    LTEXT           "V.V.V",IDC_VERSION,114,39,93,11,SS_CENTERIMAGE
 END
 
 IDD_GH_SETTINGS DIALOGEX 0, 0, 214, 187

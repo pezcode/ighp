@@ -23,6 +23,8 @@
 
 #include "GlobalHotkeysPlugin.h"
 
+const char GlobalHotkeysPlugin::version_str[] = "0.1.0";
+
 GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(0)
 {
 	SetResourceHandle(dllHandle);
