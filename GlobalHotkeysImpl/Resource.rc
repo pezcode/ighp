@@ -130,7 +130,7 @@ BEGIN
             VALUE "InternalName", "ighp"
             VALUE "LegalCopyright", "Copyright (c) 2011 Stefan Cosma, pezcode"
             VALUE "OriginalFilename", "GlobalHotkeys.dll"
-            VALUE "ProductName", "iTunes Global Hotkeys X"
+            VALUE "ProductName", "iTunes Global Hotkeys"
             VALUE "ProductVersion", "0, 1, 0, 0"
         END
     END
