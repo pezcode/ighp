@@ -3,7 +3,7 @@
 <head>
   <meta charset='utf-8'>
 
-  <title>pezcode/ighp @ GitHub</title>
+  <title>iTunes Global Hotkeys Plugin (ighp)</title>
 
   <style type="text/css">
     body {
@@ -49,30 +49,99 @@
       iTunes Global Hotkeys Plugin
     </div>
 
-    <p>iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger different actions using predefined shortcuts even if the  player is minimized or hidden.</p><h2>Install</h2>
-<p>If you downloaded the dll or compiled it from source you must copy it to the iTunes plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.</p>
-<h2>Authors</h2>
-<p>pezcode (mail@rvrs.in)<br/>      </p>
+    <p>iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger different actions using predefined shortcuts even if the  player is minimized or hidden.</p>
+    <p>This is a fork of the original ighp by Stefan Cosma which is located at <a href="http://ighp.berlios.de/">ighp.berlios.de</a>. For a list of changes see History below, forked versions begin at 0.0.4.</p>
+    
+    <h2>Install</h2>
+    
+		<p>The plugin is distributed as binary package (a zipped .dll + readmes) or as an installer which automatically copies the .dll to the appropiate place.</p>
+		<p>If you downloaded the .dll or compiled it from source you must manually copy it to the iTunes plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.</p>
+		
+	<h2>Download</h2>
+	<p>
+		You can download the installer here: 
+		<a href="https://github.com/downloads/pezcode/ighp/ighp_0.1.0.exe">ighp_0.1.0.exe</a><br />
+		Or get the binary package here: <a href="https://github.com/downloads/pezcode/ighp/ighp_0.1.0_bin.zip">ighp_0.1.0_bin.zip</a>.
+	</p>
+	<p>
+		You can download the source code in either
+		<a href="http://github.com/pezcode/ighp/zipball/master">zip</a> or
+		<a href="http://github.com/pezcode/ighp/tarball/master">tar</a> formats.
+	</p>
+	<p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+		by running:
+		<pre>$ git clone git://github.com/pezcode/ighp</pre>
+	</p>
+	
+	<h2>Configuration</h2>
+	
+<p>To customize the hotkeys you must open the settings dialog in iTunes:<br />
+Go to <i>View > Visualizer</i>, select <i>Global Hotkeys</i> and click the <i>Options</i> item.</p>
+<p>To set a hotkey:</p>
+<ul>
+ <li>select the action you want to set</li>
+ <li>focus the textbox next to 'Hotkey'</li>
+ <li>press the combination you need</li>
+ <li>click 'Set'</li>
+</ul>
+<p>To delete a hotkey:</p>
+<ul>
+ <li>select the action you want to remove</li>
+ <li>click 'Clear'</li>
+</ul>
+		<h2>History</h2>
+		
+<h4>0.1.0</h4>
+
+ <ul>
+ <li>Settings dialog accessible from iTunes Visualizer menu</li>
+ <li>About dialog</li>
+ <li>Options are saved inside iTunes</li>
+ <li>New actions: Fast Forward, Rewind, Quit</li>
+ <li>Merged the two DLLs into one</li>
+ <li>Removed support for hotkeys involving the Windows key</li>
+ <li>Removed actions: OpenSettingsFile, OpenSettingsDialog, ReloadHotkeys</li>
+ </ul>
+
+<h4>0.0.4:</h4>
+
+ <ul>
+ <li>Support for standard multimedia keys: MMPlayPause, MMStop, MMPrev, MMNext, MMVolUp, MMVolDown, MMVolMute</li>
+ </ul>
+ 
+<h4>0.0.3:</h4>
+
+ <ul>
+ <li>Two new actions: OpenSettingsFile and ReloadHotkeys</li>
+ <li>Ability to modify and reload hotkeys without closing iTunes</li>
+ <li>Configuration file stored in user folder</li>
+ <li>Installer kit</li>
+ </ul>
+ 
+<h4>0.0.2:</h4>
+
+ <ul>
+ <li>This release adds more actions</li>
+ </ul>
+ 
+<h4>0.0.1:</h4>
+
+ <ul>
+ <li>First alfa release</li>
+ </ul>
+ 
+ 		<h2>Authors</h2>
+		
+		<p>pezcode ([mail] AT [rvrs.in])<br/></p>
+
 <h2>Contact</h2>
-<p>(mail@rvrs.in)<br/>      </p>
+<p>[mail] AT [rvrs.in]<br/></p>
 
+<div class="footer">
+	get the source code on GitHub : <a href="http://github.com/pezcode/ighp">pezcode/ighp</a>
+</div>
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/pezcode/ighp/zipball/master">zip</a> or
-      <a href="http://github.com/pezcode/ighp/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/pezcode/ighp</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/pezcode/ighp">pezcode/ighp</a>
-    </div>
-
-  </div>
+</div>
 
   
 </body>
