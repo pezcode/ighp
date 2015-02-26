@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,10 @@
  * THE SOFTWARE.
  */
 
-#define NOMINMAX
-
 /*
 	includes
 */
 #include <new>
-#include <limits>
 #include <cstring>
 
 #include <windows.h>
@@ -39,9 +36,9 @@
 #include "GlobalHotkeysPlugin.h"
 
 /*
-	typedef's, struct's, enum's, etc.
+	typedefs, structs, enums, etc.
 */
-const char kTVisualPluginName[] = "Global Hotkeys";
+const wchar_t kTVisualPluginName[] = L"Global Hotkeys";
 const OSType kTVisualPluginCreator = 'pzcd';
 
 const UInt8 kTVisualPluginMajorVersion = 0;
@@ -49,7 +46,7 @@ const UInt8 kTVisualPluginMinorVersion = 1;
 const UInt8 kTVisualPluginReleaseStage = finalStage;
 const UInt8 kTVisualPluginNonFinalRelease = 0;
 
-static GlobalHotkeysPlugin* globalHotkeysPlugin = 0;
+static GlobalHotkeysPlugin* globalHotkeysPlugin = nullptr;
 
 struct VisualPluginData
 {
@@ -57,33 +54,22 @@ struct VisualPluginData
 	void* appCookie;
 	ITAppProcPtr appProc;
 
-	GRAPHICS_DEVICE destPort;
-	Rect destRect;
+	VISUAL_PLATFORM_VIEW view;
 };
 
-/*
-	RenderVisualPort
-*/
-static void RenderVisualPort(GRAPHICS_DEVICE destPort, const Rect* destRect)
+static void DrawVisual(VISUAL_PLATFORM_VIEW view)
 {
-	RECT srcRect;
-
-	if(destPort == NULL)
+	if(!IsWindow(view))
 		return;
 
-	srcRect.left = destRect->left;
-	srcRect.top = destRect->top;
-	srcRect.right = destRect->right;
-	srcRect.bottom = destRect->bottom;
+	RECT rect;
+	GetClientRect(view, &rect);
 
-	HDC hdc = GetDC(destPort);
-	FillRect(hdc, &srcRect, (HBRUSH)GetStockObject(BLACK_BRUSH));
-	ReleaseDC(destPort, hdc);
+	HDC hdc = GetDC(view);
+	FillRect(hdc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH));
+	ReleaseDC(view, hdc);
 }
 
-/*
-	VisualPluginHandler
-*/
 static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* messageInfo, void* refCon)
 {
 	VisualPluginData* visualPluginData = (VisualPluginData*)refCon;
@@ -93,7 +79,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 	{
 		/*
 			Sent when the visual plugin is registered.  The plugin should do minimal
-			memory allocations here.  The resource fork of the plugin is still available.
+			memory allocations here.
 		*/		
 		case kVisualPluginInitMessage:
 		{
@@ -109,9 +95,9 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 
 			visualPluginData->appCookie	= messageInfo->u.initMessage.appCookie;
 			visualPluginData->appProc	= messageInfo->u.initMessage.appProc;
-			visualPluginData->destPort = NULL;
+			visualPluginData->view = NULL;
 
-			messageInfo->u.initMessage.refCon = (void*)visualPluginData;
+			messageInfo->u.initMessage.refCon = static_cast<void*>(visualPluginData);
 
 			PluginSettings::Instance().SetiTunesData(visualPluginData->appCookie, visualPluginData->appProc);
 			PluginSettings::Instance().ReadConfig();
@@ -120,7 +106,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 		}
 
 		/*
-			Sent when the visual plugin is unloaded
+			Sent when the visual plugin is unloaded.
 		*/		
 		case kVisualPluginCleanupMessage:
 			delete visualPluginData;
@@ -129,13 +115,25 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			break;
 
 		/*
-			Sent when the visual plugin is enabled.  iTunes currently enables all
-			loaded visual plugins.  The plugin should not do anything here.
+			Sent when the visual plugin is enabled/disabled.  iTunes currently enables all
+			loaded visual plugins at launch.  The plugin should not do anything here.
 		*/
 		case kVisualPluginEnableMessage:
 		case kVisualPluginDisableMessage:
 			break;
 
+		/*
+			Sent if the plugin requests idle messages.  Do this by setting the kVisualWantsIdleMessages
+			option in the RegisterVisualMessage.options field.
+
+			DO NOT DRAW in this routine.  It is for updating internal state only.
+		*/
+		case kVisualPluginIdleMessage:
+			break;
+		/*
+			Sent if the plugin requests the ability for the user to configure it. Do this by setting
+			the kVisualWantsConfigure option in the RegisterVisualMessage.options field.
+		*/
 		case kVisualPluginConfigureMessage:
 			// get iTunes window as dialog parent
 			HWND Parent;
@@ -146,102 +144,120 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			break;
 
 		/*
-			Sent when iTunes is going to show the visual plugin in a port.  At
-			this point,the plugin should allocate any large buffers it needs.
+			Sent when iTunes is going to show the visual plugin. At this
+			point, the plugin should allocate any large buffers it needs.
 		*/
-		case kVisualPluginShowWindowMessage:
-			visualPluginData->destPort = messageInfo->u.showWindowMessage.window;
-			visualPluginData->destRect = messageInfo->u.showWindowMessage.drawRect;
-			RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
+		case kVisualPluginActivateMessage:
+			// note: do not draw here if you can avoid it, a draw message will be sent as soon as possible
+			visualPluginData->view = messageInfo->u.activateMessage.view;
 			break;
 
 		/*
 			Sent when iTunes is no longer displayed.
 		*/
-		case kVisualPluginHideWindowMessage:
-			visualPluginData->destPort = NULL;
+		case kVisualPluginDeactivateMessage:
+			visualPluginData->view = NULL;
 			break;
 
 		/*
-			Sent when iTunes needs to change the port or rectangle of the currently
-			displayed visual.
+			Sent when iTunes is moving the destination view to a new parent window (e.g. to/from fullscreen).
 		*/
-		case kVisualPluginSetWindowMessage:
-			visualPluginData->destPort = messageInfo->u.setWindowMessage.window;
-			visualPluginData->destRect = messageInfo->u.setWindowMessage.drawRect;
-			RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
+		case kVisualPluginWindowChangedMessage:
 			break;
 
 		/*
-			Sent for the visual plugin to render a frame.
+			Sent when iTunes has changed the rectangle of the currently displayed visual.
+			Note: for custom NSView subviews, the subview's frame is automatically resized.
 		*/
-		case kVisualPluginRenderMessage:
-			RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
+		case kVisualPluginFrameChangedMessage:
 			break;
 
 		/*
-			Sent in response to an update event.  The visual plugin should update
-			into its remembered port.  This will only be sent if the plugin has been
-			previously given a ShowWindow message.
+			Sent for the visual plugin to update its internal animation state.
+			Plugins are allowed to draw at this time but it is more efficient if they
+			wait until the kVisualPluginDrawMessage is sent OR they simply invalidate
+			their own subview. The pulse message can be sent faster than the system
+			will allow drawing to support spectral analysis-type plugins but drawing
+			will be limited to the system refresh rate.
 		*/
-		case kVisualPluginUpdateMessage:
-			RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
+		case kVisualPluginPulseMessage:
+			break;
+		
+		/*
+			It's time for the plugin to draw a new frame.
+
+			For plugins using custom subviews, you should ignore this message and just
+			draw in your view's draw method. It will never be called if your subview
+			is set up properly.
+		*/
+		case kVisualPluginDrawMessage:
+			DrawVisual(visualPluginData->view);
 			break;
 
 		/*
-			Sent when the player stops.
+			Sent when the player starts.
+		*/
+		case kVisualPluginPlayMessage:
+			break;
+
+		/*
+			Sent when the player changes the current track information. This
+			is used when the information about a track changes.
+		*/
+		case kVisualPluginChangeTrackMessage:
+			break;
+
+		/*
+			Artwork for the currently playing song is being delivered per a previous request.
+			Note that NULL for messageInfo->u.coverArtMessage.coverArt means the currently playing song has no artwork.
+		*/
+		case kVisualPluginCoverArtMessage:
+			break;
+
+		/*
+			Sent when the player stops or pauses.
 		*/
 		case kVisualPluginStopMessage:
-			//RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
 			break;
 
 		/*
-			Sent when the player pauses.  iTunes does not currently use pause or unpause.
-			A pause in iTunes is handled by stopping and remembering the position.
+			Sent when the player changes the playback position.
 		*/
-		case kVisualPluginPauseMessage:
-			//RenderVisualPort(visualPluginData->destPort, &visualPluginData->destRect);
+		case kVisualPluginSetPositionMessage:
 			break;
 
 		default:
 			status = unimpErr;
 			break;
 	}
+
 	return status;	
 }
 
-/*
-	RegisterVisualPlugin
-*/
 static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 {
-	PlayerMessageInfo playerMessageInfo;
-
-	memset(&playerMessageInfo, 0, sizeof(playerMessageInfo));
+	PlayerMessageInfo playerMessageInfo = { 0 };
 
 	// copy in name length byte first
-	playerMessageInfo.u.registerVisualPluginMessage.name[0] = strlen(kTVisualPluginName);
+	playerMessageInfo.u.registerVisualPluginMessage.name[0] = wcslen(kTVisualPluginName);
 	// now copy in actual name
-	strcpy_s((char*)&playerMessageInfo.u.registerVisualPluginMessage.name[1], 63, kTVisualPluginName);		
+	wcscpy((wchar_t*)&playerMessageInfo.u.registerVisualPluginMessage.name[1], kTVisualPluginName);
 
 	SetNumVersion(&playerMessageInfo.u.registerVisualPluginMessage.pluginVersion, kTVisualPluginMajorVersion, kTVisualPluginMinorVersion, kTVisualPluginReleaseStage, kTVisualPluginNonFinalRelease);
 
 	playerMessageInfo.u.registerVisualPluginMessage.options					= kVisualWantsConfigure;
 	playerMessageInfo.u.registerVisualPluginMessage.handler					= VisualPluginHandler;
-	playerMessageInfo.u.registerVisualPluginMessage.registerRefCon			= 0;
+	playerMessageInfo.u.registerVisualPluginMessage.registerRefCon			= nullptr;
 	playerMessageInfo.u.registerVisualPluginMessage.creator					= kTVisualPluginCreator;
 	
-	playerMessageInfo.u.registerVisualPluginMessage.timeBetweenDataInMS		= 0xFFFFFFFE; // 16 milliseconds = 1 Tick,0xFFFFFFFF = Often as possible.
-	playerMessageInfo.u.registerVisualPluginMessage.numWaveformChannels		= 2;
-	playerMessageInfo.u.registerVisualPluginMessage.numSpectrumChannels		= 2;
+	playerMessageInfo.u.registerVisualPluginMessage.pulseRateInHz			= 0;
+	playerMessageInfo.u.registerVisualPluginMessage.numWaveformChannels		= 0;
+	playerMessageInfo.u.registerVisualPluginMessage.numSpectrumChannels		= 0;
 	
-	playerMessageInfo.u.registerVisualPluginMessage.minWidth				= 64;
-	playerMessageInfo.u.registerVisualPluginMessage.minHeight				= 64;
-	playerMessageInfo.u.registerVisualPluginMessage.maxWidth				= std::numeric_limits<SInt16>::max();
-	playerMessageInfo.u.registerVisualPluginMessage.maxHeight				= std::numeric_limits<SInt16>::max();
-	playerMessageInfo.u.registerVisualPluginMessage.minFullScreenBitDepth	= 0;
-	playerMessageInfo.u.registerVisualPluginMessage.maxFullScreenBitDepth	= 0;
-	playerMessageInfo.u.registerVisualPluginMessage.windowAlignmentInBytes	= 0;
+	playerMessageInfo.u.registerVisualPluginMessage.minWidth				= 0; // no restriction
+	playerMessageInfo.u.registerVisualPluginMessage.minHeight				= 0; // no restriction
+	playerMessageInfo.u.registerVisualPluginMessage.maxWidth				= 0; // no restriction
+	playerMessageInfo.u.registerVisualPluginMessage.maxHeight				= 0; // no restriction
 
 	return PlayerRegisterVisualPlugin(messageInfo->u.initMessage.appCookie, messageInfo->u.initMessage.appProc, &playerMessageInfo);
 }
@@ -251,13 +267,12 @@ static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 */
 extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, PluginMessageInfo* messageInfo, void* refCon)
 {
-	(void)refCon; //unused
-
 	OSStatus status = noErr;
 
 	switch(message)
 	{
 		case kPluginInitMessage:
+			// Register one or more plugins here
 			status = RegisterVisualPlugin(messageInfo);
 			break;
 
@@ -284,7 +299,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 			break;
 		case DLL_PROCESS_DETACH:
 			delete globalHotkeysPlugin;
-			//globalHotkeysPlugin = 0;
+			globalHotkeysPlugin = nullptr;
 			break;
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:
