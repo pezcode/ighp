@@ -1,12 +1,12 @@
-// Win32++   Version 7.2
-// Released: 5th AUgust 2011
+// Win32++   Version 7.7
+// Release Date: 1st February 2015
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2011  David Nash
+// Copyright (c) 2005-2015  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -46,7 +46,7 @@
 // on a property page can be validated before the next page is presented.
 // Property sheets have three modes of use: Modal, Modeless, and Wizard.
 //
-// Refer to the PropertySheet demo program for an example of how propert sheets
+// Refer to the PropertySheet demo program for an example of how property sheets
 // can be used.
 
 
@@ -111,7 +111,7 @@ namespace Win32xx
 		CPropertyPage(const CPropertyPage&);				// Disable copy construction
 		CPropertyPage& operator = (const CPropertyPage&);	// Disable assignment operator
 
-		tString m_Title;
+		CString m_Title;
 	};
 
 	class CPropertySheet : public CWnd
@@ -155,10 +155,9 @@ namespace Win32xx
 		void BuildPageArray();
 		static void CALLBACK Callback(HWND hwnd, UINT uMsg, LPARAM lParam);
 
-		tString m_Title;
+		CString m_Title;
 		std::vector<PropertyPagePtr> m_vPages;	// vector of CPropertyPage
 		std::vector<PROPSHEETPAGE> m_vPSP;		// vector of PROPSHEETPAGE
-		BOOL m_bInitialUpdate;
 		PROPSHEETHEADER m_PSH;
 	};
 
@@ -181,7 +180,7 @@ namespace Win32xx
 		m_PSP.dwFlags       |= PSP_USECALLBACK;
 		m_PSP.hInstance     = GetApp()->GetResourceHandle();
 		m_PSP.pszTemplate   = MAKEINTRESOURCE(nIDTemplate);
-		m_PSP.pszTitle      = m_Title.c_str();
+		m_PSP.pszTitle      = m_Title;
 		m_PSP.pfnDlgProc    = (DLGPROC)CPropertyPage::StaticDialogProc;
 		m_PSP.lParam        = (LPARAM)this;
 		m_PSP.pfnCallback   = CPropertyPage::StaticPropSheetPageProc;
@@ -197,7 +196,7 @@ namespace Win32xx
 
 	inline INT_PTR CPropertyPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
-		// Override this function in your class derrived from CPropertyPage if you wish to handle messages
+		// Override this function in your class derived from CPropertyPage if you wish to handle messages
 		// A typical function might look like this:
 
 		//	switch (uMsg)
@@ -222,22 +221,21 @@ namespace Win32xx
 
 		switch (uMsg)
 	    {
-		case UWM_CLEANUPTEMPS:
-			{
-				TLSData* pTLSData = (TLSData*)TlsGetValue(GetApp()->GetTlsIndex());
-				pTLSData->vTmpWnds.clear();
-			}
-			break;
-
 	    case WM_INITDIALOG:
 		    return OnInitDialog();
 
 		case PSM_QUERYSIBLINGS:
 			return (BOOL)OnQuerySiblings(wParam, lParam);
+			
+		case WM_CLOSE:	
+			{
+				OnClose();
+				return 0L;
+			}	
 
 		case WM_COMMAND:
 			{
-				// Refelect this message if it's from a control
+				// Reflect this message if it's from a control
 				CWnd* pWnd = GetApp()->GetCWndFromMap((HWND)lParam);
 				if (pWnd != NULL)
 					lr = pWnd->OnCommand(wParam, lParam);
@@ -250,6 +248,12 @@ namespace Win32xx
 			}
 			break;
 
+		case WM_DESTROY:
+			{
+				OnDestroy();
+				break;
+			}
+
 		case WM_NOTIFY:
 			{
 				// Do Notification reflection if it came from a CWnd object
@@ -260,7 +264,7 @@ namespace Win32xx
 					lr = pWndFrom->OnNotifyReflect(wParam, lParam);
 				else
 				{
-					// Some controls (eg ListView) have child windows.
+					// Some controls (e.g. ListView) have child windows.
 					// Reflect those notifications too.
 					CWnd* pWndFromParent = GetApp()->GetCWndFromMap(::GetParent(hwndFrom));
 					if (pWndFromParent != NULL)
@@ -296,9 +300,8 @@ namespace Win32xx
 			
 		case WM_ERASEBKGND:
 			{
-				CDC dc((HDC)wParam);
-				BOOL bResult = OnEraseBkgnd(&dc);
-				dc.Detach();
+				CDC* pDC = CDC::FromHandle((HDC)wParam);
+				BOOL bResult = OnEraseBkgnd(pDC);
 				if (bResult) return TRUE;
 			}
 			break;
@@ -544,11 +547,11 @@ namespace Win32xx
 		}
 		else
 		{
-			m_Title.erase();
+			m_Title.Empty();
 			m_PSP.dwFlags &= ~PSP_USETITLE;
 		}
 
-		m_PSP.pszTitle = m_Title.c_str();
+		m_PSP.pszTitle = m_Title;
 	}
 
 	inline void CPropertyPage::SetWizardButtons(DWORD dwFlags) const
@@ -574,11 +577,11 @@ namespace Win32xx
 		{
 		case PSPCB_CREATE:
 			{
-				TLSData* pTLSData = (TLSData*)TlsGetValue(GetApp()->GetTlsIndex());
+				TLSData* pTLSData = GetApp()->GetTlsData();
 				assert(pTLSData);
 
 				// Store the CPropertyPage pointer in Thread Local Storage
-				pTLSData->pCWnd = (CWnd*)ppsp->lParam;
+				pTLSData->pWnd = reinterpret_cast<CWnd*>(ppsp->lParam);
 			}
 			break;
 		}
@@ -591,12 +594,12 @@ namespace Win32xx
 		assert( GetApp() );
 
 		// Find matching CWnd pointer for this HWND
-		CPropertyPage* pPage = (CPropertyPage*)GetApp()->GetCWndFromMap(hwndDlg);
+		CPropertyPage* pPage = static_cast<CPropertyPage*>(FromHandlePermanent(hwndDlg));
 		if (0 == pPage)
 		{
 			// matching CWnd pointer not found, so add it to HWNDMap now
-			TLSData* pTLSData = (TLSData*)TlsGetValue(GetApp()->GetTlsIndex());
-			pPage = (CPropertyPage*)pTLSData->pCWnd;
+			TLSData* pTLSData = GetApp()->GetTlsData();
+			pPage = static_cast<CPropertyPage*>(pTLSData->pWnd);
 
 			// Set the hWnd members and call DialogProc for this message
 			pPage->m_hWnd = hwndDlg;
@@ -614,7 +617,6 @@ namespace Win32xx
 	{
 		ZeroMemory(&m_PSH, sizeof (PROPSHEETHEADER));
 		SetTitle(LoadString(nIDCaption));
-		m_bInitialUpdate = FALSE;
 
 #ifdef _WIN32_WCE
 		m_PSH.dwSize = sizeof(PROPSHEETHEADER);
@@ -635,7 +637,6 @@ namespace Win32xx
 	{
 		ZeroMemory(&m_PSH, sizeof (PROPSHEETHEADER));
 		SetTitle(pszCaption);
-		m_bInitialUpdate = FALSE;
 
 #ifdef _WIN32_WCE
 		m_PSH.dwSize = PROPSHEETHEADER_V1_SIZE;
@@ -706,14 +707,13 @@ namespace Win32xx
 		case PSCB_INITIALIZED:
 			{
 				// Retrieve pointer to CWnd object from Thread Local Storage
-				TLSData* pTLSData = (TLSData*)TlsGetValue(GetApp()->GetTlsIndex());
+				TLSData* pTLSData = GetApp()->GetTlsData();
 				assert(pTLSData);
 
-				CPropertySheet* w = (CPropertySheet*)pTLSData->pCWnd;
+				CPropertySheet* w = static_cast<CPropertySheet*>(pTLSData->pWnd);
 				assert(w);
 
 				w->Attach(hwnd);
-				w->OnCreate();
 			}
 			break;
 		}
@@ -752,10 +752,10 @@ namespace Win32xx
 		assert(!::IsWindow(m_hWnd));
 
 		// Ensure this thread has the TLS index set
-		TLSData* pTLSData = GetApp()->SetTlsIndex();
+		TLSData* pTLSData = GetApp()->SetTlsData();
 
 		// Store the 'this' pointer in Thread Local Storage
-		pTLSData->pCWnd = this;
+		pTLSData->pWnd = this;
 
 		// Create the property sheet
 		ipResult = PropertySheet(ppsph);
@@ -806,7 +806,7 @@ namespace Win32xx
 		if (m_hWnd != NULL)
 		{
 			HWND hPage = (HWND)SendMessage(PSM_GETCURRENTPAGEHWND, 0L, 0L);
-			pPage = (CPropertyPage*)FromHandle(hPage);
+			pPage = static_cast<CPropertyPage*>(FromHandlePermanent(hPage));
 		}
 
 		return pPage;
@@ -907,9 +907,9 @@ namespace Win32xx
 		if (szTitle)
 			m_Title = szTitle;
 		else
-			m_Title.erase();
+			m_Title.Empty();
 
-		m_PSH.pszCaption = m_Title.c_str();
+		m_PSH.pszCaption = m_Title;
 	}
 
 	inline void CPropertySheet::SetWizardMode(BOOL bWizard)
@@ -924,22 +924,8 @@ namespace Win32xx
 	{
 		switch (uMsg)
 		{
-
-		case WM_WINDOWPOSCHANGED:
-			{
-				LPWINDOWPOS lpWinPos = (LPWINDOWPOS)lParam;
-				if (lpWinPos->flags & SWP_SHOWWINDOW)
-				{
-					if (!m_bInitialUpdate)
-						// The first window positioning with the window visible
-						OnInitialUpdate();
-					m_bInitialUpdate = TRUE;
-				}
-			}
-			break;
-
 		case WM_DESTROY:
-			m_bInitialUpdate = FALSE;
+			OnDestroy();
 			break;
 
 		case WM_SYSCOMMAND:

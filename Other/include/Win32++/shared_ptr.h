@@ -70,26 +70,32 @@
 //    int nLength = ::GetWindowTextLength(m_hWnd);
 //	  pTChar = new TCHAR[nLength+1];
 //	  memset(pTChar, 0, (nLength+1)*sizeof(TCHAR));
-//	  ::GetWindowText(m_hWnd, m_pTChar, nLength+1);
+//	  ::GetWindowText(m_hWnd, m_pTChar, nLength);
 //    ....
 //    delete[] pTChar;
 //
 // This can be improved by using a vector instead of an array
+// This works because the memory in a vector is always contiguous.
+// Note that this is NOT always true of std::string.
 //    int nLength = ::GetWindowTextLength(m_hWnd);
 //    std::vector<TCHAR> vTChar( nLength+1, _T('\0') );
 //    TCHAR* pTCharArray = &vTChar.front();
-//    ::GetWindowText(m_hWnd, pTCharArray, nLength+1);
+//    ::GetWindowText(m_hWnd, pTCharArray, nLength+1); 
 //
-// This works because the memory in a vector is always contiguous. Note that
-// this is NOT always true of std::string.
+// Alternatively we could use a CString.
+//    int nLength = ::GetWindowTextLength(m_hWnd);
+//    CString str;
+//    ::GetWindowText(m_hWnd, str.GetBuffer(nLength), nLength);
+//    str.ReleaseBuffer();
+//
 
 
 // Summing up:
 // In my opinion, "naked" pointers for dynamically created objects should be 
-// avoided in modern C++ code. That's to say that calls to "new" should be 
-// wrapped in some sort of smart pointer wherever possible. This eliminates 
-// the possibility of memory leaks (particularly in the event of exceptions). 
-// It also elminiates the need for delete in user's code.
+// avoided if possible in modern C++ code. That's to say that calls to "new" should 
+// be wrapped in some sort of smart pointer wherever possible. This eliminates 
+// the possibility of memory leaks, particularly in the event of exceptions. 
+// It also eliminates the need for delete in user's code.
 
 #ifndef _WIN32XX_SHARED_PTR_
 #define _WIN32XX_SHARED_PTR_

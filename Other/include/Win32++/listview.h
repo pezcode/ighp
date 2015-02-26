@@ -1,12 +1,12 @@
-// Win32++   Version 7.2
-// Released: 5th AUgust 2011
+// Win32++   Version 7.7
+// Release Date: 1st February 2015
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2011  David Nash
+// Copyright (c) 2005-2015  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -41,6 +41,7 @@
 
 #include "wincore.h"
 #include "commctrl.h"
+#include "controls.h"
 
 namespace Win32xx
 {
@@ -68,14 +69,14 @@ namespace Win32xx
 		HCURSOR GetHotCursor( );
 		int GetHotItem( ) const;
 		DWORD GetHoverTime( ) const;
-		HIMAGELIST GetImageList( int nImageType ) const;
+		CImageList* GetImageList( int nImageType ) const;
 		BOOL GetItem( LVITEM& lvItem ) const;
 		int GetItemCount( ) const;
 		DWORD_PTR GetItemData( int iItem ) const;
 		BOOL GetItemPosition( int iItem, CPoint& pt ) const;
 		BOOL GetItemRect( int iItem, CRect& rc, UINT nCode ) const;
 		UINT GetItemState( int iItem, UINT nMask ) const;
-		tString GetItemText( int iItem, int iSubItem, UINT nTextMax = 260 ) const;
+		CString GetItemText( int iItem, int iSubItem, UINT nTextMax = 260 ) const;
 		int GetNextItem( int iItem, int iFlags ) const;
 		UINT GetNumberOfWorkAreas( ) const;
 		BOOL GetOrigin( CPoint& pt ) const;
@@ -85,7 +86,7 @@ namespace Win32xx
 		BOOL GetSubItemRect( int iItem, int iSubItem, int iCode, CRect& rc ) const;
 		COLORREF GetTextBkColor( ) const;
 		COLORREF GetTextColor( ) const;
-		HWND GetToolTips( ) const;
+		CToolTip* GetToolTips( ) const;
 		int GetTopIndex( ) const;
 		BOOL GetViewRect( CRect& rc ) const;
 		void GetWorkAreas( int iWorkAreas, LPRECT pRectArray ) const;
@@ -102,7 +103,7 @@ namespace Win32xx
 		DWORD SetHoverTime( DWORD dwHoverTime = (DWORD)-1 ) const;
 		CSize SetIconSpacing( int cx, int cy ) const;
 		CSize SetIconSpacing( CSize sz ) const;
-		HIMAGELIST SetImageList( HIMAGELIST himl, int iImageListType ) const;
+		CImageList* SetImageList( CImageList* pNew, int iImageListType ) const;
 		BOOL SetItem( LVITEM& pItem ) const;
 		BOOL SetItem( int iItem, int iSubItem, UINT nMask, LPCTSTR pszText, int iImage,
 						UINT nState, UINT nStateMask, LPARAM lParam, int iIndent ) const;
@@ -116,13 +117,13 @@ namespace Win32xx
 		int SetSelectionMark( int iIndex ) const;
 		BOOL SetTextBkColor( COLORREF clrBkText ) const;
 		BOOL SetTextColor( COLORREF clrText ) const;
-		HWND SetToolTips( HWND hWndToolTip ) const;
+		CToolTip* SetToolTips ( CToolTip* pToolTip ) const;
 		void SetWorkAreas( int nWorkAreas, CRect& pRectArray ) const;
 		int SubItemHitTest( LVHITTESTINFO& htInfo ) const;
 
 		// Operations
 		BOOL Arrange( UINT nCode ) const;
-		HIMAGELIST CreateDragImage( int iItem, CPoint& pt ) const;
+		CImageList* CreateDragImage( int iItem, CPoint& pt ) const;
 		BOOL DeleteAllItems( ) const;
 		BOOL DeleteColumn( int iCol ) const;
 		BOOL DeleteItem( int iItem ) const;
@@ -143,7 +144,7 @@ namespace Win32xx
 		BOOL Update( int iItem ) const;
 
 	private:
-		CListView(const CListView&);				// Disable copy construction
+		CListView(const CListView&);			  // Disable copy construction
 		CListView& operator = (const CListView&); // Disable assignment operator
 	};
 
@@ -228,7 +229,7 @@ namespace Win32xx
 	// Retrieves the handle to the edit control being used to edit a list-view item's text.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_GetEditControl( m_hWnd );
+		return ListView_GetEditControl(m_hWnd);
 	}
 
 	inline DWORD CListView::GetExtendedStyle( ) const
@@ -242,7 +243,7 @@ namespace Win32xx
 	// Retrieves the handle to the header control used by a list-view control.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_GetHeader( m_hWnd );
+		return ListView_GetHeader(m_hWnd);
 	}
 
 	inline HCURSOR CListView::GetHotCursor( )
@@ -266,11 +267,11 @@ namespace Win32xx
 		return ListView_GetHoverTime( m_hWnd );
 	}
 
-	inline HIMAGELIST CListView::GetImageList( int nImageType ) const
+	inline CImageList* CListView::GetImageList( int nImageType ) const
 	// Retrieves the handle to an image list used for drawing list-view items.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_GetImageList( m_hWnd, nImageType );
+		return CImageList::FromHandle( ListView_GetImageList( m_hWnd, nImageType ) );
 	}
 
 	inline BOOL CListView::GetItem( LVITEM& Item ) const
@@ -292,7 +293,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVITEM lvi = {0};
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(LVITEM));
 		lvi.iItem = iItem;
 		lvi.mask = LVIF_PARAM;
 		ListView_GetItem(m_hWnd, &lvi);
@@ -328,28 +330,27 @@ namespace Win32xx
 		return  ListView_GetItemState( m_hWnd, iItem, nMask );
 	}
 
-	inline tString CListView::GetItemText( int iItem, int iSubItem, UINT nTextMax /* = 260 */ ) const
+	inline CString CListView::GetItemText( int iItem, int iSubItem, UINT nTextMax /* = 260 */ ) const
 	// Retrieves the text of a list-view item.
 	// Note: Although the list-view control allows any length string to be stored
 	//       as item text, only the first 260 characters are displayed.
 	{
 		assert(::IsWindow(m_hWnd));
 
-		tString t;
+		CString str;
 		if (nTextMax > 0)
 		{
-			std::vector<TCHAR> vTChar(nTextMax +1, _T('\0'));
-			TCHAR* pszText = &vTChar.front();
-			LVITEM lvi = {0};
+			LVITEM lvi;
+			ZeroMemory(&lvi, sizeof(LVITEM));
 			lvi.iItem = iItem;
 			lvi.iSubItem = iSubItem;
 			lvi.mask = LVIF_TEXT;
 			lvi.cchTextMax = nTextMax;
-			lvi.pszText = pszText;
+			lvi.pszText = str.GetBuffer(nTextMax);
 			ListView_GetItem( m_hWnd, &lvi );
-			t = lvi.pszText;
+			str.ReleaseBuffer();
 		}
-		return t;
+		return str;
 	}
 
 	inline int CListView::GetNextItem( int iItem, int iFlags ) const
@@ -365,7 +366,7 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 		UINT nWorkAreas = 0;
-		ListView_GetWorkAreas( m_hWnd, nWorkAreas, NULL );
+		ListView_GetNumberOfWorkAreas( m_hWnd, &nWorkAreas );
 		return nWorkAreas;
 	}
 
@@ -380,21 +381,21 @@ namespace Win32xx
 	// Determines the number of selected items in a list-view control.
 	{
 		assert(::IsWindow(m_hWnd));
-		return (UINT)::SendMessage( m_hWnd, LVM_GETSELECTEDCOUNT, 0L, 0L );
+		return (UINT)SendMessage( LVM_GETSELECTEDCOUNT, 0L, 0L );
 	}
 
 	inline int CListView::GetSelectionMark( ) const
 	// Retrieves the selection mark from a list-view control.
 	{
 		assert(::IsWindow(m_hWnd));
-		return (int)::SendMessage( m_hWnd, LVM_GETSELECTIONMARK, 0L, 0L );
+		return (int)SendMessage( LVM_GETSELECTIONMARK, 0L, 0L );
 	}
 
 	inline int CListView::GetStringWidth( LPCTSTR pszString ) const
 	// Determines the width of a specified string using the specified list-view control's current font.
 	{
 		assert(::IsWindow(m_hWnd));
-		return (int)::SendMessage( m_hWnd, LVM_GETSTRINGWIDTH, 0L, (LPARAM)pszString );
+		return (int)SendMessage( LVM_GETSTRINGWIDTH, 0L, (LPARAM)pszString );
 	}
 
 	inline BOOL CListView::GetSubItemRect( int iItem, int iSubItem, int iCode, CRect& rc ) const
@@ -418,11 +419,11 @@ namespace Win32xx
 		return ListView_GetTextColor( m_hWnd );
 	}
 
-	inline HWND CListView::GetToolTips( ) const
+	inline CToolTip* CListView::GetToolTips( ) const
 	// Retrieves the ToolTip control that the list-view control uses to display ToolTips.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_GetToolTips( m_hWnd );
+		return static_cast<CToolTip*>(FromHandlePermanent(ListView_GetToolTips(m_hWnd)));
 	}
 
 	inline int CListView::GetTopIndex( ) const
@@ -472,7 +473,7 @@ namespace Win32xx
 	// This macro should only be used for list-view controls with the LVS_EX_CHECKBOXES style.
 	{
 		assert(::IsWindow(m_hWnd));
-		ListView_SetItemState(m_hWnd, iItem, INDEXTOSTATEIMAGEMASK((fCheck==TRUE)?2:1),LVIS_STATEIMAGEMASK);
+		ListView_SetItemState(m_hWnd, iItem, INDEXTOSTATEIMAGEMASK((fCheck!=FALSE)?2:1),LVIS_STATEIMAGEMASK);
 	}
 
 	inline BOOL CListView::SetColumn( int iCol, const LVCOLUMN& Column ) const
@@ -539,11 +540,12 @@ namespace Win32xx
 		return CSize( ListView_SetIconSpacing( m_hWnd, sz.cx, sz.cy ) );
 	}
 
-	inline HIMAGELIST CListView::SetImageList( HIMAGELIST himl, int iImageListType ) const
+	inline CImageList* CListView::SetImageList( CImageList* pNew, int iImageListType ) const
 	// Assigns an image list to a list-view control.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_SetImageList( m_hWnd, himl, iImageListType );
+		HIMAGELIST himlNew = pNew ? pNew->GetHandle() : 0;		
+		return CImageList::FromHandle( ListView_SetImageList( m_hWnd, himlNew, iImageListType ) );
 	}
 
 	inline BOOL CListView::SetItem( LVITEM& Item ) const
@@ -572,7 +574,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVITEM lvi = {0};
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(LVITEM));
 		lvi.iItem = iItem;
 		lvi.iSubItem = iSubItem;
 		lvi.mask = nMask;
@@ -605,7 +608,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVITEM lvi = {0};
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(LVITEM));
 		lvi.iItem = iItem;
 		lvi.lParam = dwData;
 		lvi.mask = LVIF_PARAM;
@@ -631,7 +635,7 @@ namespace Win32xx
 	// LVIS_STATEIMAGEMASK	Use this mask to retrieve the item's state image index.
 	{
 		assert(::IsWindow(m_hWnd));
-		return (BOOL)::SendMessage(m_hWnd, LVM_SETITEMSTATE, (WPARAM)iItem, (LPARAM)&Item);
+		return (BOOL)SendMessage(LVM_SETITEMSTATE, (WPARAM)iItem, (LPARAM)&Item);
 	}
 
     inline void CListView::SetItemState( int iItem, UINT nState, UINT nMask ) const
@@ -669,11 +673,14 @@ namespace Win32xx
 		return ListView_SetTextColor( m_hWnd, clrText );
 	}
 
-	inline HWND CListView::SetToolTips( HWND hWndToolTip ) const
+	inline CToolTip* CListView::SetToolTips( CToolTip* pToolTip ) const
 	// Sets the ToolTip control that the list-view control will use to display ToolTips.
 	{
 		assert(::IsWindow(m_hWnd));
-		return (HWND)::SendMessage(m_hWnd, LVM_SETTOOLTIPS, (WPARAM)hWndToolTip, 0L);
+		assert(pToolTip);
+
+		HWND hToolTip = pToolTip? pToolTip->GetHwnd() : 0;
+		return static_cast<CToolTip*>(FromHandlePermanent((HWND)SendMessage(LVM_SETTOOLTIPS, (WPARAM)hToolTip, 0L)));
 	}
 
 	inline void CListView::SetWorkAreas( int nWorkAreas, CRect& pRectArray ) const
@@ -699,11 +706,11 @@ namespace Win32xx
 		return ListView_Arrange( m_hWnd, nCode );
 	}
 
-	inline HIMAGELIST CListView::CreateDragImage( int iItem, CPoint& pt ) const
+	inline CImageList* CListView::CreateDragImage( int iItem, CPoint& pt ) const
 	// Creates a drag image list for the specified item.
 	{
 		assert(::IsWindow(m_hWnd));
-		return ListView_CreateDragImage( m_hWnd, iItem, &pt );
+		return CImageList::FromHandle( ListView_CreateDragImage( m_hWnd, iItem, &pt ) );
 	}
 
 	inline BOOL CListView::DeleteAllItems( ) const
@@ -761,7 +768,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVHITTESTINFO hti = {0};
+		LVHITTESTINFO hti;
+		ZeroMemory(&hti, sizeof(LVHITTESTINFO));
 		hti.flags = *pFlags;
 		hti.pt = pt;
 		return ListView_HitTest( m_hWnd, &hti );
@@ -780,7 +788,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVCOLUMN lvc = {0};
+		LVCOLUMN lvc;
+		ZeroMemory(&lvc, sizeof(LVCOLUMN));
 		lvc.mask = LVCF_TEXT|LVCF_ORDER|LVCF_FMT;
 		if (-1 != iWidth)
 		{
@@ -812,7 +821,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVITEM lvi = {0};
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(LVITEM));
 		lvi.iItem = iItem;
 		lvi.pszText = (LPTSTR)pszText;
 		lvi.mask = LVIF_TEXT;
@@ -824,7 +834,8 @@ namespace Win32xx
 	{
 		assert(::IsWindow(m_hWnd));
 
-		LVITEM lvi = {0};
+		LVITEM lvi;
+		ZeroMemory(&lvi, sizeof(LVITEM));
 		lvi.iItem = iItem;
 		lvi.pszText = (LPTSTR)pszText;
 		lvi.iImage = iImage;

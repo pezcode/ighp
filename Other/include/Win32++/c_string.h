@@ -1,12 +1,12 @@
-// Win32++   Version 7.2
-// Released: 5th AUgust 2011
+// Win32++   Version 7.7
+// Release Date: 1st February 2015
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2011  David Nash
+// Copyright (c) 2005-2015  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -39,21 +39,21 @@
 // Thanks to Adam Szulc for his initial CString code.
 
 ////////////////////////////////////////////////////////
-// cstring.h
-//  Declaration of the cstring.h
+// c_string.h
+//  Declaration of the CString class
 
-// This class is intended to provide a simple alternative to the MFC/ATL 
+// This class is intended to provide a simple alternative to the MFC/ATL
 // CString class that ships with Microsoft compilers. The CString class
 // specified here is compatible with other compilers such as Borland 5.5
 // and MinGW.
 
 // Differences between this class and the MFC/ATL CString class
 // ------------------------------------------------------------
-// 1) The constructors for this class accepts only TCHARs. The various text conversion
-//    functions can be used to convert from other character types to TCHARs.
+// 1) The constructors for this class accepts both ANSI and Unicode characters and
+//    automatically converts these to TCHAR as required.
 //
-// 2) This class is not reference counted, so these CStrings should be passed as 
-//    references or const references when used as function arguments. As a result there 
+// 2) This class is not reference counted, so these CStrings should be passed as
+//    references or const references when used as function arguments. As a result there
 //    is no need for functions like LockBuffer and UnLockBuffer.
 //
 // 3) The Format functions only accepts POD (Plain Old Data) arguments. It does not
@@ -69,16 +69,15 @@
 //      // This is ok
 //      string2.Format(_T("String1 is: %s"), (LPCTSTR)string1); // Yes, this is correct
 //
-//    Note: The MFC/ATL CString class uses a non portable hack to make its CString class 
+//    Note: The MFC/ATL CString class uses a non portable hack to make its CString class
 //          behave like a POD. Other compilers (such as the MinGW compiler) specifically
 //          prohibit the use of non POD types for functions with variable argument lists.
 //
 // 4) This class provides a few additional functions:
-//       b_str			Returns a BSTR string. This an an alternative for casting to BSTR.
 //       c_str			Returns a const TCHAR string. This is an alternative for casting to LPCTSTR.
-//       GetErrorString	Assigns CString to the error string for the specified System Error Code 
+//       GetErrorString	Assigns CString to the error string for the specified System Error Code
 //                      (from ::GetLastErrror() for example).
-//       GetString		Returns a reference to the underlying std::basic_string<TCHAR>. This 
+//       GetString		Returns a reference to the underlying std::basic_string<TCHAR>. This
 //						reference can be used to modify the string directly.
 
 
@@ -93,47 +92,56 @@
 namespace Win32xx
 {
 
-	class CString 
+	class CString
 	{
 		// friend functions allow the left hand side to be something other than CString
 		friend CString operator + (const CString& string1, const CString& string2);
-		friend CString operator + (const CString& string, LPCTSTR pszText);	
+		friend CString operator + (const CString& string, LPCTSTR pszText);
 		friend CString operator + (const CString& string, TCHAR ch);
 		friend CString operator + (LPCTSTR pszText, const CString& string);
-		friend CString operator + (TCHAR ch, const CString& string);		
+		friend CString operator + (TCHAR ch, const CString& string);
+		friend bool    operator < (const CString& string1, const CString& string2);
+		friend bool    operator > (const CString& string1, const CString& string2);
+		friend bool    operator < (const CString& string1, LPCTSTR pszText);
+		friend bool    operator > (const CString& string1, LPCTSTR pszText);
+		friend bool    operator <= (const CString& string1, const CString& string2);
+		friend bool    operator >= (const CString& string1, const CString& string2);
+		friend bool    operator <= (const CString& string1, LPCTSTR pszText);
+		friend bool    operator >= (const CString& string1, LPCTSTR pszText);
 
 	public:
 		CString();
 		~CString();
 		CString(const CString& str);
-		CString(LPCTSTR pszText);
+		CString(LPCSTR pszText);
+		CString(LPCWSTR pszText);
 		CString(TCHAR ch, int nLength = 1);
 		CString(LPCTSTR pszText, int nLength);
 
 		CString& operator = (const CString& str);
 		CString& operator = (const TCHAR ch);
-		CString& operator = (LPCTSTR pszText);
-		BOOL     operator == (LPCTSTR pszText);
-		BOOL     operator != (LPCTSTR pszText);
-		BOOL	 operator < (LPCTSTR pszText);
-		BOOL	 operator > (LPCTSTR pszText);
-		BOOL	 operator <= (LPCTSTR pszText);
-		BOOL	 operator >= (LPCTSTR pszText);
+		CString& operator = (LPCSTR pszText);
+		CString& operator = (LPCWSTR pszText);
+		bool     operator == (LPCTSTR pszText) const;
+		bool     operator != (LPCTSTR pszText) const;
 				 operator LPCTSTR() const;
-				 operator BSTR() const;
 		TCHAR&   operator [] (int nIndex);
 		CString& operator += (const CString& str);
+		CString& operator += (LPCSTR szText);
+		CString& operator += (LPCWSTR szText);
+		CString& operator += (const TCHAR ch);
 
 		// Attributes
-		BSTR     b_str() const		{ return T2W(m_str.c_str()); }	// alternative for casting to BSTR
 		LPCTSTR	 c_str() const		{ return m_str.c_str(); }		// alternative for casting to LPCTSTR
-		tString& GetString()		{ return m_str; }				// returns a reference to the underlying std::basic_string<TCHAR>
-		int      GetLength() const	{ return (int)m_str.length(); }		// returns the length in characters
+		tString& GetString() 		{ return m_str; }				// returns a reference to the underlying std::basic_string<TCHAR>
+		int      GetLength() const	{ return (int)m_str.length(); }	// returns the length in characters
 
 		// Operations
 		BSTR     AllocSysString() const;
 		void	 AppendFormat(LPCTSTR pszFormat,...);
 		void	 AppendFormat(UINT nFormatID, ...);
+		int      Collate(LPCTSTR pszText) const;
+		int		 CollateNoCase(LPCTSTR pszText) const;		
 		int      Compare(LPCTSTR pszText) const;
 		int      CompareNoCase(LPCTSTR pszText) const;
 		int      Delete(int nIndex, int nCount = 1);
@@ -151,9 +159,9 @@ namespace Win32xx
 		void     Empty();
 		int      Insert(int nIndex, TCHAR ch);
 		int      Insert(int nIndex, const CString& str);
-		BOOL     IsEmpty() const;
+		bool     IsEmpty() const;
 		CString  Left(int nCount) const;
-		BOOL	 LoadString(UINT nID);
+		bool	 LoadString(UINT nID);
 		void     MakeLower();
 		void	 MakeReverse();
 		void     MakeUpper();
@@ -180,9 +188,7 @@ namespace Win32xx
 		void     Truncate(int nNewLength);
 
 #ifndef _WIN32_WCE
-		int      Collate(LPCTSTR pszText) const;
-		int		 CollateNoCase(LPCTSTR pszText) const;
-		BOOL	 GetEnvironmentVariable(LPCTSTR pszVar);
+		bool	 GetEnvironmentVariable(LPCTSTR pszVar);
 #endif
 
 	private:
@@ -203,19 +209,24 @@ namespace Win32xx
 		m_str.assign(str);
 	}
 
-	inline CString::CString(LPCTSTR pszText)
+	inline CString::CString(LPCSTR pszText)
 	{
-		m_str.assign(pszText);
+		m_str.assign(A2T(pszText));
+	}
+
+	inline CString::CString(LPCWSTR pszText)
+	{
+		m_str.assign(W2T(pszText));
 	}
 
 	inline CString::CString(TCHAR ch, int nLength)
 	{
 		m_str.assign(nLength, ch);
 	}
-	
+
 	inline CString::CString(LPCTSTR pszText, int nLength)
 	{
-		m_str.assign(pszText, nLength);	
+		m_str.assign(pszText, nLength);
 	}
 
 	inline CString& CString::operator = (const CString& str)
@@ -230,48 +241,30 @@ namespace Win32xx
 		return *this;
 	}
 
-	inline CString& CString::operator = (LPCTSTR pszText)
+	inline CString& CString::operator = (LPCSTR pszText)
 	{
-		m_str.assign(pszText);
+		m_str.assign(A2T(pszText));
 		return *this;
 	}
 
-	inline BOOL CString::operator == (LPCTSTR pszText)
+	inline CString& CString::operator = (LPCWSTR pszText)
+	{
+		m_str.assign(W2T(pszText));
+		return *this;
+	}
+
+	inline bool CString::operator == (LPCTSTR pszText) const
 	// Returns TRUE if the strings have the same content
 	{
 		assert(pszText);
 		return (0 == Compare(pszText));
 	}
 
-	inline BOOL CString::operator != (LPCTSTR pszText)
+	inline bool CString::operator != (LPCTSTR pszText) const
 	// Returns TRUE if the strings have a different content
 	{
 		assert(pszText);
         return Compare(pszText) != 0;
-	}
-
-	inline BOOL CString::operator < (LPCTSTR pszText)
-	{
-		assert(pszText);
-		return Compare(pszText) < 0;
-	}
-
-	inline BOOL CString::operator > (LPCTSTR pszText)
-	{
-		assert(pszText);
-		return Compare(pszText) > 0;
-	}
-
-	inline BOOL CString::operator <= (LPCTSTR pszText)
-	{
-		assert(pszText);
-		return Compare(pszText) <= 0;
-	}
-
-	inline BOOL CString::operator >= (LPCTSTR pszText)
-	{
-		assert(pszText);
-		return Compare(pszText) >= 0;
 	}
 
 	inline CString::operator LPCTSTR() const
@@ -292,6 +285,24 @@ namespace Win32xx
 		return *this;
 	}
 
+	inline CString& CString::operator += (LPCSTR szText)
+	{
+		m_str.append(A2T(szText));
+		return *this;
+	}
+
+	inline CString& CString::operator += (LPCWSTR szText)
+	{
+		m_str.append(W2T(szText));
+		return *this;
+	}
+
+	inline CString& CString::operator += (const TCHAR ch)
+	{
+		m_str.append(1,ch);
+		return *this;
+	}
+
 	inline BSTR CString::AllocSysString() const
 	// Allocates a BSTR from the CString content.
 	{
@@ -302,7 +313,12 @@ namespace Win32xx
 	// Appends formatted data to an the CString content.
 	{
 		CString str;
-		str.Format(pszFormat);
+
+		va_list args;
+		va_start(args, pszFormat);
+		str.FormatV(pszFormat, args);
+		va_end(args);
+
 		m_str.append(str);
 	}
 
@@ -311,41 +327,56 @@ namespace Win32xx
 	{
 		CString str1;
 		CString str2;
+
 		if (str1.LoadString(nFormatID))
 		{
-			str2.Format(str1);
+			va_list args;
+			va_start(args, nFormatID);
+			str2.FormatV(str1.c_str(), args);
+			va_end(args);
+
 			m_str.append(str2);
 		}
 	}
 
-#ifndef _WIN32_WCE
 	inline int CString::Collate(LPCTSTR pszText) const
 	// Performs a case sensitive comparison of the two strings using locale-specific information.
 	{
 		assert(pszText);
-		return _tcscoll(m_str.c_str(), pszText);
+        int res = CompareString(LOCALE_USER_DEFAULT, 0, m_str.c_str(), -1, pszText, -1);
+		
+		assert(res);
+		if 		(res == CSTR_LESS_THAN) return -1;
+		else if (res == CSTR_GREATER_THAN) return 1;
+		
+		return 0;
 	}
 
 	inline int CString::CollateNoCase(LPCTSTR pszText) const
 	// Performs a case insensitive comparison of the two strings using locale-specific information.
 	{
 		assert(pszText);
-		return _tcsicoll(m_str.c_str(), pszText);
+        int res = CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, m_str.c_str(), -1, pszText, -1);
+		
+		assert(res);
+		if 		(res == CSTR_LESS_THAN) return -1;
+		else if (res == CSTR_GREATER_THAN) return 1;
+		
+		return 0;
 	}
-#endif	// _WIN32_WCE
 
 	inline int CString::Compare(LPCTSTR pszText) const
 	// Performs a case sensitive comparison of the two strings.
 	{
 		assert(pszText);
-		return m_str.compare(pszText);
+        return lstrcmp(m_str.data(), pszText);
 	}
 
 	inline int CString::CompareNoCase(LPCTSTR pszText) const
 	// Performs a case insensitive comparison of the two strings.
 	{
 		assert(pszText);
-		return _tcsicmp(m_str.data(), pszText);
+        return lstrcmpi(m_str.data(), pszText);
 	}
 
 	inline int CString::Delete(int nIndex, int nCount /* = 1 */)
@@ -372,7 +403,7 @@ namespace Win32xx
 	}
 
 	inline int CString::Find(LPCTSTR pszText, int nIndex /* = 0 */) const
-	// Finds a substring within the string. 
+	// Finds a substring within the string.
 	{
 		assert(pszText);
 		assert(nIndex >= 0);
@@ -398,10 +429,14 @@ namespace Win32xx
 	inline void CString::Format(UINT nID, ...)
 	// Formats the string as sprintf does.
 	{
-		Empty();
 		CString str;
 		if (str.LoadString(nID))
-			Format(str);
+		{
+			va_list args;
+			va_start(args, nID);
+			FormatV(str.c_str(), args);
+			va_end(args);
+		}
 	}
 
 	inline void CString::FormatV(LPCTSTR pszFormat, va_list args)
@@ -412,7 +447,7 @@ namespace Win32xx
 			int nResult = -1, nLength = 256;
 
 			// A vector is used to store the TCHAR array
-			std::vector<TCHAR> vBuffer;( nLength+1, _T('\0') );
+			std::vector<TCHAR> vBuffer;
 
 			while (-1 == nResult)
 			{
@@ -458,16 +493,16 @@ namespace Win32xx
 	}
 
 	inline LPTSTR CString::GetBuffer(int nMinBufLength)
-	// Creates a buffer of nMinBufLength charaters (+1 extra for NULL termination) and returns 
+	// Creates a buffer of nMinBufLength charaters (+1 extra for NULL termination) and returns
 	// a pointer to this buffer. This buffer can be used by any function which accepts a LPTSTR.
-	// Care must be taken not to exceed the length of the buffer. Use ReleaseBuffer to safely 
+	// Care must be taken not to exceed the length of the buffer. Use ReleaseBuffer to safely
 	// copy this buffer back to the CString object.
 	//
 	// Note: The buffer uses a vector. Vectors are required to be contiguous in memory under
 	//       the current standard, whereas std::strings do not have this requirement.
 	{
 		assert (nMinBufLength >= 0);
-		
+
 		m_buf.assign(nMinBufLength + 1, _T('\0'));
 		tString::iterator it_end;
 
@@ -478,14 +513,14 @@ namespace Win32xx
 		}
 		else
 			it_end = m_str.end();
-		
+
 		std::copy(m_str.begin(), it_end, m_buf.begin());
 
 		return &m_buf[0];
 	}
 
 #ifndef _WIN32_WCE
-	inline BOOL CString::GetEnvironmentVariable(LPCTSTR pszVar)
+	inline bool CString::GetEnvironmentVariable(LPCTSTR pszVar)
 	// Sets the string to the value of the specified environment variable.
 	{
 		assert(pszVar);
@@ -499,7 +534,7 @@ namespace Win32xx
 			m_str = &vBuffer[0];
 		}
 
-		return (BOOL)nLength;
+		return (nLength != 0);
 	}
 #endif // _WIN32_WCE
 
@@ -507,7 +542,7 @@ namespace Win32xx
 	// Returns the error string for the specified System Error Code (e.g from GetLastErrror).
 	{
 		m_str.erase();
-		
+
 		if (dwError != 0)
 		{
 			TCHAR* pTemp = 0;
@@ -517,7 +552,7 @@ namespace Win32xx
 			::LocalFree(pTemp);
 		}
 	}
-	
+
 	inline int CString::Insert(int nIndex, TCHAR ch)
 	// Inserts a single character or a substring at the given index within the string.
 	{
@@ -537,7 +572,7 @@ namespace Win32xx
 		return (int)m_str.size();
 	}
 
-	inline BOOL CString::IsEmpty() const
+	inline bool CString::IsEmpty() const
 	// Returns TRUE if the string is empty
 	{
 		return m_str.empty();
@@ -553,7 +588,7 @@ namespace Win32xx
 		return str;
 	}
 
-	inline BOOL CString::LoadString(UINT nID)
+	inline bool CString::LoadString(UINT nID)
 	// Loads the string from a Windows resource.
 	{
 		assert (GetApp());
@@ -590,12 +625,14 @@ namespace Win32xx
 	inline void CString::MakeReverse()
 	// Reverses the string.
 	{
+		// Error 2285 with Borland 5.5 occurs here unless option -tWM is used instead of -tW
 		std::reverse(m_str.begin(), m_str.end());
 	}
 
 	inline void CString::MakeUpper()
 	// Converts all the characters in this string to uppercase characters.
 	{
+		// Error 2285 with Borland 5.5 occurs here unless option -tWM is used instead of -tW
 		std::transform(m_str.begin(), m_str.end(), m_str.begin(), &::toupper);
 	}
 
@@ -612,7 +649,7 @@ namespace Win32xx
 		assert(nCount >= 0);
 
 		CString str;
-		str.m_str.assign(c_str(), nFirst, nFirst + nCount);
+		str.m_str.assign(c_str(), nFirst, nCount);
 		return str;
 	}
 
@@ -624,7 +661,7 @@ namespace Win32xx
 	}
 
 	inline void CString::SetAt(int nIndex, TCHAR ch)
-	// Sets the character at the specificed position to the specified value.
+	// Sets the character at the specified position to the specified value.
 	{
 		assert(nIndex >= 0);
 		assert(nIndex < GetLength());
@@ -638,15 +675,15 @@ namespace Win32xx
 	// terminator, you must specify the buffer's length.
 	{
 		assert (nNewLength > 0 || -1 == nNewLength);
-		assert (nNewLength < (int)m_buf.size());
+		assert (nNewLength <= (int)m_buf.size());
 
 		if (-1 == nNewLength)
 			nNewLength = lstrlen(&m_buf[0]);
-		m_str.assign(nNewLength+1, _T('\0'));
+		m_str.assign(nNewLength, _T('\0'));
 
 		std::vector<TCHAR>::iterator it_end = m_buf.begin();
 		std::advance(it_end, nNewLength);
-		
+
 		std::copy(m_buf.begin(), it_end, m_str.begin());
 		m_buf.clear();
 	}
@@ -658,16 +695,17 @@ namespace Win32xx
 
 		int nCount = 0;
 		size_t pos = 0;
+		size_t len = lstrlen(pszText);
 		while ((pos = m_str.find(pszText, pos)) != std::string::npos)
 		{
-			m_str.erase(pos, lstrlen(pszText));
+			m_str.erase(pos, len);
 			++nCount;
 		}
 		return nCount;
 	}
 
 	inline int CString::Replace(TCHAR chOld, TCHAR chNew)
-	// Replaces each occurance of the old character with the new character.
+	// Replaces each occurrence of the old character with the new character.
 	{
 		int nCount = 0;
 		tString::iterator it = m_str.begin();
@@ -684,17 +722,19 @@ namespace Win32xx
 	}
 
 	inline int CString::Replace(LPCTSTR pszOld, LPCTSTR pszNew)
-	// Replaces each occurance of the old substring with the new substring.
+	// Replaces each occurrence of the old substring with the new substring.
 	{
 		assert(pszOld);
 		assert(pszNew);
 
 		int nCount = 0;
 		size_t pos = 0;
+		size_t lenOld = lstrlen(pszOld);
+		size_t lenNew = lstrlen(pszNew);
 		while ((pos = m_str.find(pszOld, pos)) != std::string::npos)
 		{
-			m_str.replace(pos, lstrlen(pszOld), pszNew);
-			pos += lstrlen(pszNew);
+			m_str.replace(pos, lenOld, pszNew);
+			pos += lenNew;
 			++nCount;
 		}
 		return nCount;
@@ -722,7 +762,7 @@ namespace Win32xx
 	}
 
 	inline CString CString::SpanExcluding(LPCTSTR pszText) const
-	// Extracts characters from the string, starting with the first character, 
+	// Extracts characters from the string, starting with the first character,
 	// that are not in the set of characters identified by pszCharSet.
 	{
 		assert (pszText);
@@ -788,7 +828,7 @@ namespace Win32xx
 		tString::iterator iter;
 		for (iter = m_str.begin(); iter < m_str.end(); ++iter)
 		{
-			if (!isspace(*iter))
+			if (!_istspace(*iter))
 				break;
 		}
 
@@ -802,7 +842,7 @@ namespace Win32xx
 	}
 
 	inline void CString::TrimLeft(LPCTSTR pszTargets)
-	// Trims the specified set of characters from the beginning of the string. 
+	// Trims the specified set of characters from the beginning of the string.
 	{
 		assert(pszTargets);
 		m_str.erase(0, m_str.find_first_not_of(pszTargets));
@@ -815,7 +855,7 @@ namespace Win32xx
 		tString::reverse_iterator riter;
 		for (riter = m_str.rbegin(); riter < m_str.rend(); ++riter)
 		{
-			if (!isspace(*riter))
+			if (!_istspace(*riter))
 				break;
 		}
 
@@ -850,7 +890,7 @@ namespace Win32xx
 		}
 	}
 
-	
+
 	///////////////////////////////////
 	// Global Functions
 	//
@@ -869,27 +909,67 @@ namespace Win32xx
 		str.m_str.append(pszText);
 		return str;
 	}
-	
+
 	inline CString operator + (const CString& string, TCHAR ch)
 	{
 		CString str(string);
 		str.m_str.append(1, ch);
 		return str;
 	}
-	
+
 	inline CString operator + (LPCTSTR pszText, const CString& string)
 	{
 		CString str(pszText);
 		str.m_str.append(string);
 		return str;
 	}
-	
+
 	inline CString operator + (TCHAR ch, const CString& string)
 	{
 		CString str(ch);
 		str.m_str.append(string);
 		return str;
-	}	
+	}
+
+	inline bool operator < (const CString& string1, const CString& string2)
+	{
+		return string1.Compare(string2) < 0;
+	}
+
+	inline bool operator > (const CString& string1, const CString& string2)
+	{
+		return string1.Compare(string2) > 0;
+	}
+
+	inline bool operator <= (const CString& string1, const CString& string2)
+	{
+		return string1.Compare(string2) <= 0;
+	}
+
+	inline bool operator >= (const CString& string1, const CString& string2)
+	{
+		return string1.Compare(string2) >= 0;
+	}
+
+	inline bool	operator < (const CString& string1, LPCTSTR pszText)
+	{
+		return string1.Compare(pszText) < 0;
+	}
+
+	inline bool	operator > (const CString& string1, LPCTSTR pszText)
+	{
+		return string1.Compare(pszText) > 0;
+	}
+
+	inline bool operator <= (const CString& string1, LPCTSTR pszText)
+	{
+		return string1.Compare(pszText) <= 0;
+	}
+
+	inline bool operator >= (const CString& string1, LPCTSTR pszText)
+	{
+		return string1.Compare(pszText) >= 0;
+	}
 
 	// Global LoadString
 	inline CString LoadString(UINT nID)
