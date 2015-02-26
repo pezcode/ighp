@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 
 #include "GlobalHotkeysPlugin.h"
 
-const char GlobalHotkeysPlugin::version_str[] = "0.1.0";
+const wchar_t GlobalHotkeysPlugin::version_str[] = L"0.1.1";
 
 GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(0)
 {
@@ -47,9 +47,9 @@ void GlobalHotkeysWnd::PreRegisterClass(WNDCLASS &wc)
 	wc.hInstance        = GetApp()->GetInstanceHandle();
 	wc.hIcon            = NULL;
 	wc.hCursor          = LoadCursor (NULL, IDC_ARROW);
-	wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
+	wc.hbrBackground    = (HBRUSH)(COLOR_WINDOW+1);
 	wc.lpszMenuName     = NULL;
-	wc.lpszClassName    = TEXT("GlobalHotkeysClass");
+	wc.lpszClassName    = L"GlobalHotkeysClass";
 }
 
 void GlobalHotkeysWnd::PreCreate(CREATESTRUCT &cs)
@@ -58,7 +58,7 @@ void GlobalHotkeysWnd::PreCreate(CREATESTRUCT &cs)
 	cs.hMenu          = NULL;
 	cs.hwndParent     = NULL;
 	cs.lpCreateParams = NULL;
-	cs.lpszName       = TEXT("Global Hotkeys");
+	cs.lpszName       = L"Global Hotkeys";
 	cs.style          = WS_POPUP;
 	cs.dwExStyle      = WS_EX_TRANSPARENT;
 	cs.x              = CW_USEDEFAULT;
@@ -104,7 +104,7 @@ void GlobalHotkeysPlugin::ShowSettingsDialog(HWND Parent)
 {
 	if(!m_settingsDialog)
 	{
-		m_settingsDialog = new GlobalHotkeysDialog(Parent ? FromHandle(Parent) : CWnd().GetDesktopWindow());
+		m_settingsDialog = new GlobalHotkeysDialog(Parent ? CWnd::FromHandle(Parent) : CWnd().GetDesktopWindow());
 		m_settingsDialog->AddPage(new CSettingsPage);
 		m_settingsDialog->AddPage(new CAboutPage);
 		m_settingsDialog->DoModal();
@@ -146,7 +146,7 @@ bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& 
 
 bool GlobalHotkeysPlugin::UnregisterHotkeys()
 {
-	for(int i = 0; i < m_hotkeys.size(); i++)
+	for(size_t i = 0; i < m_hotkeys.size(); i++)
 	{
 		UnregisterHotKey(m_mainWindow.GetHwnd(), i);
 	}

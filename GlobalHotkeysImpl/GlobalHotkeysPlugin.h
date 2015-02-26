@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ public:
 	explicit GlobalHotkeysPlugin(HINSTANCE dllHandle); 
 	virtual ~GlobalHotkeysPlugin();
 
-	static GlobalHotkeysPlugin& Instance() { return *((GlobalHotkeysPlugin*)GetApp()); }
+	static GlobalHotkeysPlugin& Instance() { return *static_cast<GlobalHotkeysPlugin*>(GetApp()); }
 
 	void ShowSettingsDialog(HWND Parent = NULL);
 
@@ -67,7 +67,7 @@ public:
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);
 
 	static const int version = 10;
-	static const char version_str[];
+	static const wchar_t version_str[];
 
 private:
 	GlobalHotkeysWnd m_mainWindow;

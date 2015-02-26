@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,15 +55,14 @@ bool PluginSettings::ReadConfig()
 	}
 
 	// Loop all existing actions
-	std::map<Action::Type, std::string>::const_iterator iter;
-	for(iter = Action::names.begin(); iter != Action::names.end(); iter++)
+	for(auto iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
 		Action::Type action_code = iter->first;
-		ConstStringPtr action_name = (ConstStringPtr)iter->second.c_str();
+		const char* action_name = W2A(iter->second.c_str());
 		UInt16 keys = 0;
 		UInt32 size = sizeof(keys);
 		Hotkey hotkey; // Default is empty
-		OSStatus res = PlayerGetPluginNamedData(appCookie, appProc, action_name, &keys, size, &size);
+		OSStatus res = PlayerGetPluginNamedData(appCookie, appProc, (ConstStringPtr)action_name, &keys, size, &size);
 		if(res == noErr && size == sizeof(keys))
 		{
 			hotkey = Hotkey(keys & 0xFF, (keys >> 8) & 0xFF);
@@ -78,15 +77,14 @@ bool PluginSettings::WriteConfig()
 	PlayerSetPluginNamedData(appCookie, appProc, (ConstStringPtr)"Version", (void*)&GlobalHotkeysPlugin::version, sizeof(GlobalHotkeysPlugin::version));
 
 	// Loop all existing actions
-	std::map<Action::Type, std::string>::const_iterator iter;
-	for(iter = Action::names.begin(); iter != Action::names.end(); iter++)
+	for(auto iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
 		Action::Type action_code = iter->first;
-		ConstStringPtr action_name = (ConstStringPtr)iter->second.c_str();
+		const char* action_name = W2A(iter->second.c_str());
 		// Get hotkey for that action
 		Hotkey hotkey = m_hotkeys[action_code]; // creates an empty hotkey if none exists
 		UInt16 keys = (hotkey.GetKeyCode() & 0xFF) | ((hotkey.GetModifiers() & 0xFF) << 8);
-		PlayerSetPluginNamedData(appCookie, appProc, action_name, &keys, sizeof(keys));
+		PlayerSetPluginNamedData(appCookie, appProc, (ConstStringPtr)action_name, &keys, sizeof(keys));
 	}
 	return true;	
 }

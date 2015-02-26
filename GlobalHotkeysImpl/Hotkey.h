@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ public:
 	unsigned char GetKeyCode() const { return m_keyCode; }
 	unsigned char GetModifiers() const { return m_modifiers; }
 
-	std::string toString() const;
+	std::wstring toString() const;
 
 	bool IsEmpty() const { return (m_keyCode == 0); }
 
@@ -43,7 +43,7 @@ private:
 	unsigned char m_keyCode;
 	unsigned char m_modifiers;
 
-	static std::string GetKeyName(unsigned char keyCode, bool extended = false);
+	static std::wstring GetKeyName(unsigned char keyCode, bool extended = false);
 };
 
 #endif /* HOTKEY_H */

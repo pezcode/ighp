@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,22 @@
 #include <windows.h>
 #include <commctrl.h>
 
-std::string Hotkey::toString() const
+std::wstring Hotkey::toString() const
 {
-	std::string hotkey_name;
+	std::wstring hotkey_name;
 
 	if(!IsEmpty())
 	{
 		//ctrl, shift, alt, win
 
 		if(m_modifiers & HOTKEYF_CONTROL)
-			hotkey_name += GetKeyName(VK_CONTROL) + " + ";
+			hotkey_name += GetKeyName(VK_CONTROL) + L" + ";
 
 		if(m_modifiers & HOTKEYF_SHIFT)
-			hotkey_name += GetKeyName(VK_SHIFT) + " + ";
+			hotkey_name += GetKeyName(VK_SHIFT) + L" + ";
 
 		if(m_modifiers & HOTKEYF_ALT)
-			hotkey_name += GetKeyName(VK_LMENU) + " + ";
+			hotkey_name += GetKeyName(VK_LMENU) + L" + ";
 
 		hotkey_name += GetKeyName(m_keyCode, (m_modifiers & HOTKEYF_EXT) != 0);
 	}
@@ -49,7 +49,7 @@ std::string Hotkey::toString() const
 	return hotkey_name;
 }
 
-std::string Hotkey::GetKeyName(BYTE virtualKey, bool extended)
+std::wstring Hotkey::GetKeyName(BYTE virtualKey, bool extended)
 {
 	UINT scanCode = MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC) << 16;
 
@@ -58,10 +58,11 @@ std::string Hotkey::GetKeyName(BYTE virtualKey, bool extended)
 
 	scanCode |= (1 << 25); // don't care
 
-	char keyName[50];
+	wchar_t keyName[50];
 	if(GetKeyNameText(scanCode, keyName, _countof(keyName)))
 	{
 		return keyName;
 	}
-	return "";
+
+	return L"";
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@
 #include "GlobalHotkeysDialog.h"
 #include "PluginSettings.h"
 
-const char CAboutPage::URL[] = "http://pezcode.github.com/ighp/";
+#include <shellapi.h>
+
+const wchar_t CAboutPage::URL[] = L"http://pezcode.github.com/ighp/";
 
 void CHotkey::PreCreate(CREATESTRUCT &cs)
 {
@@ -33,7 +35,7 @@ void CHotkey::PreCreate(CREATESTRUCT &cs)
 	cs.hMenu          = NULL;
 	cs.hwndParent     = NULL;
 	cs.lpCreateParams = NULL;
-	cs.lpszName       = TEXT("");
+	cs.lpszName       = L"";
 	cs.lpszClass      = HOTKEY_CLASS;
 	cs.style          = WS_CHILD | WS_VISIBLE;
 	cs.dwExStyle      = NULL;
@@ -78,8 +80,8 @@ BOOL CAboutPage::OnInitDialog()
 
 	m_Version.SetWindowText(GlobalHotkeysPlugin::version_str);
 
-	MakeBold(&m_Title, true);
-	Resize(&m_Title, 3);
+	//MakeBold(&m_Title, true);
+	//Resize(&m_Title, 3);
 
 	InitURLControl();
 
@@ -116,13 +118,13 @@ void CAboutPage::OnURL(const NMLINK* lpClick)
 void CAboutPage::InitURLControl()
 {
 	// Set the text first so the SysLink controls which URL is which iLink
-	std::string title = std::string("<a>") + URL + "</a>";
+	std::wstring title = std::wstring(L"<a>") + URL + L"</a>";
 	m_URL.SetWindowText(title.c_str());
 
 	LITEM item;
 	item.mask = LIF_ITEMINDEX | LIF_URL;
 	item.iLink = 0;
-	wcscpy(item.szUrl, A2W(URL));
+	wcscpy(item.szUrl, URL);
 	m_URL.SendMessage(LM_SETITEM, NULL, (LPARAM)&item);
 }
 
@@ -254,7 +256,7 @@ void CSettingsPage::OnClear()
 	m_hotkeys[action] = Hotkey(); // set empty
 
 	m_hotkeyInput.SetHotKey(0, 0);
-	m_hotkeysListView.SetItemText(index, 1, "");
+	m_hotkeysListView.SetItemText(index, 1, L"");
 
 	PropSheet_Changed(GetParent()->GetHwnd(), m_hWnd);
 }
@@ -263,11 +265,11 @@ void CSettingsPage::InitHotkeysListView()
 {
 	m_hotkeysListView.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
-	m_hotkeysListView.InsertColumn(0, "Action", LVCFMT_LEFT, -1, 0);
-	m_hotkeysListView.InsertColumn(1, "Hotkey", LVCFMT_LEFT, -1, 1);
+	m_hotkeysListView.InsertColumn(0, L"Action", LVCFMT_LEFT, -1, 0);
+	m_hotkeysListView.InsertColumn(1, L"Hotkey", LVCFMT_LEFT, -1, 1);
 }
 
-void CSettingsPage::AddHotkeyListItem(const std::string& action, const std::string& hotkey)
+void CSettingsPage::AddHotkeyListItem(const std::wstring& action, const std::wstring& hotkey)
 {
 	int index = m_hotkeysListView.InsertItem(m_hotkeysListView.GetItemCount(), action.c_str());
 	m_hotkeysListView.SetItemText(index, 1, hotkey.c_str());
@@ -275,8 +277,7 @@ void CSettingsPage::AddHotkeyListItem(const std::string& action, const std::stri
 
 void CSettingsPage::PopulateHotkeysList()
 {
-	std::map<Action::Type, std::string>::const_iterator iter;
-	for(iter = Action::names.begin(); iter != Action::names.end(); iter++)
+	for(auto iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
 		Hotkey hotkey = m_hotkeys[iter->first];
 		AddHotkeyListItem(iter->second, hotkey.toString());

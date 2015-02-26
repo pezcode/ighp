@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #include "iTunesCOMInterface.h"
 
-std::map<Action::Type, std::string> Action::names;
+std::map<Action::Type, std::wstring> Action::names;
 
 void Action::Perform() const
 {
@@ -100,24 +100,24 @@ void Action::InitNames()
 	if(names.size() != 0)
 		return;
 	
-	names[eActionPlayPause] = std::string("Play/Pause");
-	names[eActionNextTrack] = std::string("Next Track");
-	names[eActionPreviousTrack] = std::string("Previous Track");
-	names[eActionFastForward] = std::string("Fast Forward");
-	names[eActionRewind] = std::string("Rewind");
-	names[eActionRandom] = std::string("Toggle Random");
-	names[eActionRepeat] = std::string("Toggle Repeat");
-	names[eActionSongRatingClear] = std::string("Clear Song Rating");
-	names[eActionSongRating1] = std::string("Rate Song: 1 Star");
-	names[eActionSongRating2] = std::string("Rate Song: 2 Stars");
-	names[eActionSongRating3] = std::string("Rate Song: 3 Stars");
-	names[eActionSongRating4] = std::string("Rate Song: 4 Stars");
-	names[eActionSongRating5] = std::string("Rate Song: 5 Stars");
-	names[eActionVolumeUp] = std::string("Increase Volume");
-	names[eActionVolumeDown] = std::string("Decrease Volume");
-	names[eActionToggleMute] = std::string("Toggle Mute");
-	names[eActionShowHide] = std::string("Show/Hide");
-	names[eActionQuit] = std::string("Quit");
+	names[eActionPlayPause]			= L"Play/Pause";
+	names[eActionNextTrack]			= L"Next Track";
+	names[eActionPreviousTrack]		= L"Previous Track";
+	names[eActionFastForward]		= L"Fast Forward";
+	names[eActionRewind]			= L"Rewind";
+	names[eActionRandom]			= L"Toggle Random";
+	names[eActionRepeat]			= L"Toggle Repeat";
+	names[eActionSongRatingClear]	= L"Clear Song Rating";
+	names[eActionSongRating1]		= L"Rate Song: 1 Star";
+	names[eActionSongRating2]		= L"Rate Song: 2 Stars";
+	names[eActionSongRating3]		= L"Rate Song: 3 Stars";
+	names[eActionSongRating4]		= L"Rate Song: 4 Stars";
+	names[eActionSongRating5]		= L"Rate Song: 5 Stars";
+	names[eActionVolumeUp]			= L"Increase Volume";
+	names[eActionVolumeDown]		= L"Decrease Volume";
+	names[eActionToggleMute]		= L"Toggle Mute";
+	names[eActionShowHide]			= L"Show/Hide";
+	names[eActionQuit]				= L"Quit";
 }
 
 void Action::PlayPause()

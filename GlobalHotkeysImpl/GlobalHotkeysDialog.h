@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2011 pezcode <mail@rvrs.in>
+ * Copyright (c) 2015 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ protected:
 class CSettingsPage : public CPropertyPage
 {
 public:
-	CSettingsPage() : CPropertyPage(IDD_GH_SETTINGS, "Settings") { }
+	CSettingsPage() : CPropertyPage(IDD_GH_SETTINGS, L"Settings") { }
 	virtual ~CSettingsPage() { }
 
 	virtual BOOL OnInitDialog();
@@ -89,7 +89,7 @@ private:
 	void InitHotkeysListView();
 	void PopulateHotkeysList();
 
-	void AddHotkeyListItem(const std::string& action, const std::string& hotkey);
+	void AddHotkeyListItem(const std::wstring& action, const std::wstring& hotkey);
 
 	void OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange);
 };
@@ -97,7 +97,7 @@ private:
 class CAboutPage : public CPropertyPage
 {
 public:
-	CAboutPage() : CPropertyPage(IDD_GH_ABOUT, "About") { }
+	CAboutPage() : CPropertyPage(IDD_GH_ABOUT, L"About") { }
 	virtual ~CAboutPage() { }
 
 	virtual BOOL OnInitDialog();
@@ -108,7 +108,7 @@ private:
 	CStatic m_Version;
 	CWnd m_URL;
 
-	static const char URL[];
+	static const wchar_t URL[];
 
 	void OnURL(const NMLINK* lpClick);
 
@@ -122,7 +122,7 @@ private:
 class GlobalHotkeysDialog : public CPropertySheet
 {
 public:
-	GlobalHotkeysDialog(CWnd* pParent = NULL) : CPropertySheet("Global Hotkeys Plugin", pParent) { }
+	GlobalHotkeysDialog(CWnd* pParent = NULL) : CPropertySheet(L"Global Hotkeys Plugin", pParent) { }
 	virtual ~GlobalHotkeysDialog() { };
 
 protected:
