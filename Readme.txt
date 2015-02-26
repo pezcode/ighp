@@ -1,15 +1,11 @@
-
-Global Hotkeys for iTunes v0.1.0
+Global Hotkeys for iTunes v0.1.1
 http://pezcode.github.com/ighp/
-
 
 iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger 
 different actions using predefined shortcuts even if the player is minimized 
 or hidden.
 
-
  * Supported actions
-
 
 The following actions are supported:
 
@@ -32,9 +28,7 @@ Decrease Volume     decrease volume in 5% steps
 Toggle Mute         toggle mute/unmute
 Quit                exit iTunes
 
-
  * Download and Install
-
 
 The latest release of the plugin can be found at http://pezcode.github.com/ighp/.
 You can choose between the installer, the binary package or the source package.
@@ -42,9 +36,7 @@ The source code can be compiled using Visual C++ 2008 Express and above. If you
 downloaded the dll file or compiled it from source you must copy it to the iTunes
 plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.
 
-
  * Configuration
-
 
 To customize the hotkeys you must open the settings dialog in iTunes:
 Go to View > Visualizer, select Global Hotkeys and click the Options item.
@@ -57,8 +49,6 @@ To delete a hotkey:
  - select the action you want to remove
  - click 'Clear'
 
-
  * License
-
 
 iTunes Global Hotkeys Plugin is released under the MIT/X Consortium License.
