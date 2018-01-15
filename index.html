@@ -23,10 +23,8 @@
     h3 { text-align: center; color: #000000; }
     a { color: #000000; }
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
     pre { background: #000; color: #fff; padding: 15px;}
     hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
   </style>
 </head>
 
@@ -34,13 +32,6 @@
   <a href="http://github.com/pezcode/ighp"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
   <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/pezcode/ighp/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/pezcode/ighp/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
 
     <h1><a href="http://github.com/pezcode/ighp">ighp</a>
       <span class="small">by <a href="http://github.com/pezcode">pezcode</a></span></h1>
@@ -51,30 +42,33 @@
 
     <p>iTunes Global Hotkeys Plugin (ighp) for Windows enables the user to trigger different actions using predefined shortcuts even if the  player is minimized or hidden.</p>
     <p>This is a fork of the original ighp by Stefan Cosma which is located at <a href="http://ighp.berlios.de/">ighp.berlios.de</a>. For a list of changes see History below, forked versions begin at 0.0.4.</p>
-    
+
     <h2>Install</h2>
-    
+
 		<p>The plugin is distributed as binary package (a zipped .dll + readmes) or as an installer which automatically copies the .dll to the appropiate place.</p>
 		<p>If you downloaded the .dll or compiled it from source you must manually copy it to the iTunes plugins directory (C:\Program Files\iTunes\Plug-ins) and then configure the hotkeys.</p>
-		
+
 	<h2>Download</h2>
 	<p>
-		You can download the installer here: 
-		<a href="https://github.com/downloads/pezcode/ighp/ighp_0.1.0.exe">ighp_0.1.0.exe</a><br />
-		Or get the binary package here: <a href="https://github.com/downloads/pezcode/ighp/ighp_0.1.0_bin.zip">ighp_0.1.0_bin.zip</a>.
+		You can download the installer here:
+		<a href="https://github.com/pezcode/ighp/releases/download/0.1.1/ighp_0.1.1_x64.exe">ighp_0.1.1_x64.exe</a>
+    <br />
+		Or get the binary package here: <a href="https://github.com/pezcode/ighp/releases/download/0.1.1/ighp_0.1.1_bin_x64.zip">ighp_0.1.1_bin_x64.zip</a>.
 	</p>
+  <p>
+    Most iTunes installations should be 64-bit versions, but if you're running a 32-bit iTunes, there are compatibility versions of the ighp <a href="https://github.com/pezcode/ighp/releases/download/0.1.1/ighp_0.1.1.exe">installer</a> and <a href="https://github.com/pezcode/ighp/releases/download/0.1.1/ighp_0.1.1_bin.zip">binaries</a>.
+  </p>
 	<p>
-		You can download the source code in either
-		<a href="http://github.com/pezcode/ighp/zipball/master">zip</a> or
-		<a href="http://github.com/pezcode/ighp/tarball/master">tar</a> formats.
+		You can download the source code
+		<a href="https://github.com/pezcode/ighp/archive/master.zip">here</a>.
 	</p>
 	<p>You can also clone the project with <a href="http://git-scm.com">Git</a>
 		by running:
 		<pre>$ git clone git://github.com/pezcode/ighp</pre>
 	</p>
-	
+
 	<h2>Configuration</h2>
-	
+
 <p>To customize the hotkeys you must open the settings dialog in iTunes:<br />
 Go to <i>View > Visualizer</i>, select <i>Global Hotkeys</i> and click the <i>Options</i> item.</p>
 <p>To set a hotkey:</p>
@@ -90,7 +84,14 @@ Go to <i>View > Visualizer</i>, select <i>Global Hotkeys</i> and click the <i>Op
  <li>click 'Clear'</li>
 </ul>
 		<h2>History</h2>
-		
+
+<h4>0.1.1</h4>
+
+ <ul>
+ <li>Compatibility with iTunes 12.1 (for older versions use 0.1.0)</li>
+ <li>64-bit version</li>
+ </ul>
+
 <h4>0.1.0</h4>
 
  <ul>
@@ -108,7 +109,7 @@ Go to <i>View > Visualizer</i>, select <i>Global Hotkeys</i> and click the <i>Op
  <ul>
  <li>Support for standard multimedia keys: MMPlayPause, MMStop, MMPrev, MMNext, MMVolUp, MMVolDown, MMVolMute</li>
  </ul>
- 
+
 <h4>0.0.3:</h4>
 
  <ul>
@@ -117,32 +118,25 @@ Go to <i>View > Visualizer</i>, select <i>Global Hotkeys</i> and click the <i>Op
  <li>Configuration file stored in user folder</li>
  <li>Installer kit</li>
  </ul>
- 
+
 <h4>0.0.2:</h4>
 
  <ul>
  <li>This release adds more actions</li>
  </ul>
- 
+
 <h4>0.0.1:</h4>
 
  <ul>
  <li>First alfa release</li>
  </ul>
- 
- 		<h2>Authors</h2>
-		
+
+ 		<h2>Author</h2>
+
 		<p>pezcode ([mail] AT [rvrs.in])<br/></p>
 
-<h2>Contact</h2>
-<p>[mail] AT [rvrs.in]<br/></p>
-
-<div class="footer">
-	get the source code on GitHub : <a href="http://github.com/pezcode/ighp">pezcode/ighp</a>
 </div>
 
-</div>
 
-  
 </body>
 </html>
