@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,7 +97,7 @@ void Action::Perform() const
 
 void Action::InitNames()
 {
-	if(names.size() != 0)
+	if(!names.empty())
 		return;
 	
 	names[eActionPlayPause]			= L"Play/Pause";
@@ -122,13 +122,12 @@ void Action::InitNames()
 
 void Action::PlayPause()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->PlayPause();
@@ -140,13 +139,12 @@ void Action::PlayPause()
 
 void Action::NextTrack()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->NextTrack();
@@ -159,13 +157,12 @@ void Action::NextTrack()
 
 void Action::PreviousTrack()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->PreviousTrack();
@@ -177,13 +174,12 @@ void Action::PreviousTrack()
 
 void Action::FastForward()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->FastForward();
@@ -196,13 +192,12 @@ void Action::FastForward()
 
 void Action::Rewind()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->Rewind();
@@ -214,14 +209,13 @@ void Action::Rewind()
 
 void Action::Random()
 {
-	IiTunes* iITunes = 0;
-	IITPlaylist* iIPlaylist = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
+	IITPlaylist* iIPlaylist = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->get_CurrentPlaylist(&iIPlaylist);
@@ -244,15 +238,14 @@ void Action::Random()
 
 void Action::Repeat()
 {
-	IiTunes* iITunes = 0;
-	IITPlaylist* iIPlaylist = 0;
-	HRESULT hRes;
-	ITPlaylistRepeatMode repeatMode;
+	IiTunes* iITunes = nullptr;
+	IITPlaylist* iIPlaylist = nullptr;
+	ITPlaylistRepeatMode repeatMode = ITPlaylistRepeatModeOff;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->get_CurrentPlaylist(&iIPlaylist);
@@ -284,14 +277,13 @@ void Action::Repeat()
 
 void Action::RateSong(unsigned int rating)
 {
-	IiTunes* iITunes = 0;
-	IITTrack* iITTrack = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
+	IITTrack* iITTrack = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->get_CurrentTrack(&iITTrack);
@@ -339,14 +331,13 @@ void Action::SongRating5()
 
 void Action::ShowHide()
 {
-	IiTunes* iITunes = 0;
-	IITBrowserWindow* iITBrowserWindow = 0; 
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
+	IITBrowserWindow* iITBrowserWindow = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		iITunes->get_BrowserWindow(&iITBrowserWindow);
@@ -369,13 +360,12 @@ void Action::ShowHide()
 
 void Action::ToggleVolume(long step)
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		long volume = 50;
@@ -402,13 +392,12 @@ void Action::VolumeDown()
 
 void Action::ToggleMute()
 {
-	IiTunes* iITunes = 0;
-	HRESULT hRes;
+	IiTunes* iITunes = nullptr;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
-    hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
+    HRESULT hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);
 
 	if(hRes == S_OK && iITunes) {
 		VARIANT_BOOL isMuted = VARIANT_FALSE;
@@ -425,10 +414,10 @@ void Action::ToggleMute()
 
 void Action::Quit()
 {
-	IiTunes* iITunes = 0;
+	IiTunes* iITunes = nullptr;
 	HRESULT hRes;
 
-	CoInitialize(0);
+	CoInitialize(NULL);
 
 	// Create itunes interface
     hRes = CoCreateInstance(CLSID_iTunesApp, NULL, CLSCTX_LOCAL_SERVER, IID_IiTunes, (PVOID*)&iITunes);

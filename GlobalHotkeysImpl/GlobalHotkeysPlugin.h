@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include <windows.h>
 
-#include <Win32++\WinCore.h>
+#include <Win32++\wxx_wincore.h>
 #include "resource.h"
 
 #include "GlobalHotkeysDialog.h"
@@ -38,14 +38,10 @@
 
 class GlobalHotkeysWnd : public CWnd
 {
-public:
-	explicit GlobalHotkeysWnd() { } 
-	virtual ~GlobalHotkeysWnd() { }
-
 protected:
-	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-	virtual void PreRegisterClass(WNDCLASS &wc);
-	virtual void PreCreate(CREATESTRUCT &cs);
+	virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	virtual void PreRegisterClass(WNDCLASS &wc) override;
+	virtual void PreCreate(CREATESTRUCT &cs) override;
 
 private:
 	void OnHotkey(WPARAM wParam, LPARAM lParam);
@@ -56,12 +52,13 @@ class GlobalHotkeysPlugin : public CWinApp
 {
 friend class GlobalHotkeysWnd;
 public:
-	explicit GlobalHotkeysPlugin(HINSTANCE dllHandle); 
-	virtual ~GlobalHotkeysPlugin();
+	explicit GlobalHotkeysPlugin(HINSTANCE dllHandle);
+	~GlobalHotkeysPlugin();
 
 	static GlobalHotkeysPlugin& Instance() { return *static_cast<GlobalHotkeysPlugin*>(GetApp()); }
 
 	void ShowSettingsDialog(HWND Parent = NULL);
+	void DestroySettingsDialog();
 
 	bool UnregisterHotkeys();
 	bool RegisterHotkeys(const std::map<Action::Type, Hotkey>& hotkeys);

@@ -126,7 +126,7 @@ BEGIN
             VALUE "FileDescription", "iTunes Global Hotkeys Plugin"
             VALUE "FileVersion", "0.1.1.0"
             VALUE "InternalName", "ighp"
-            VALUE "LegalCopyright", "Copyright (c) 2015 Stefan Cosma, pezcode"
+            VALUE "LegalCopyright", "Copyright (c) 2021 Stefan Cosma, pezcode"
             VALUE "OriginalFilename", "GlobalHotkeys.dll"
             VALUE "ProductName", "iTunes Global Hotkeys"
             VALUE "ProductVersion", "0.1.1.0"

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 */
 #include <new>
 #include <cstring>
+#include <type_traits>
 
 #include <windows.h>
 #include <shlobj.h>
@@ -51,11 +52,12 @@ static GlobalHotkeysPlugin* globalHotkeysPlugin = nullptr;
 struct VisualPluginData
 {
 	// needed for iTunes APIs
-	void* appCookie;
-	ITAppProcPtr appProc;
+	void* appCookie = nullptr;
+	ITAppProcPtr appProc = nullptr;
 
-	VISUAL_PLATFORM_VIEW view;
-};
+	VISUAL_PLATFORM_VIEW view = NULL;
+	bool initialized = false;
+} visualPluginData;
 
 static void DrawVisual(VISUAL_PLATFORM_VIEW view)
 {
@@ -72,7 +74,6 @@ static void DrawVisual(VISUAL_PLATFORM_VIEW view)
 
 static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* messageInfo, void* refCon)
 {
-	VisualPluginData* visualPluginData = (VisualPluginData*)refCon;
 	OSStatus status = noErr;
 
 	switch(message)
@@ -82,36 +83,31 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			memory allocations here.
 		*/		
 		case kVisualPluginInitMessage:
-		{
-			try
+			if(!visualPluginData.initialized)
 			{
-				visualPluginData = new VisualPluginData;
+				visualPluginData.appCookie = messageInfo->u.initMessage.appCookie;
+				visualPluginData.appProc = messageInfo->u.initMessage.appProc;
+				visualPluginData.view = NULL;
+
+				PluginSettings::Instance().SetiTunesData(visualPluginData.appCookie, visualPluginData.appProc);
+				PluginSettings::Instance().ReadConfig();
+				globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+
+				visualPluginData.initialized = true;
 			}
-			catch(std::bad_alloc&)
-			{
-				status = memFullErr;
-				break;
-			}
-
-			visualPluginData->appCookie	= messageInfo->u.initMessage.appCookie;
-			visualPluginData->appProc	= messageInfo->u.initMessage.appProc;
-			visualPluginData->view = NULL;
-
-			messageInfo->u.initMessage.refCon = static_cast<void*>(visualPluginData);
-
-			PluginSettings::Instance().SetiTunesData(visualPluginData->appCookie, visualPluginData->appProc);
-			PluginSettings::Instance().ReadConfig();
-			globalHotkeysPlugin->RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
 			break;
-		}
 
 		/*
 			Sent when the visual plugin is unloaded.
 		*/		
 		case kVisualPluginCleanupMessage:
-			delete visualPluginData;
-			PluginSettings::Instance().WriteConfig();
-			globalHotkeysPlugin->UnregisterHotkeys();
+			if(visualPluginData.initialized)
+			{
+				globalHotkeysPlugin->UnregisterHotkeys();
+				globalHotkeysPlugin->DestroySettingsDialog();
+
+				visualPluginData.initialized = false;
+			}
 			break;
 
 		/*
@@ -135,12 +131,13 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			the kVisualWantsConfigure option in the RegisterVisualMessage.options field.
 		*/
 		case kVisualPluginConfigureMessage:
+			// this message isn't sent with 12.9+ (possibly even earlier) anymore
 			// get iTunes window as dialog parent
-			HWND Parent;
-			Parent = NULL;
-			// Doesn't work anymore with 10.4
-			// Parent = FindWindow("iTunes", NULL);
-			globalHotkeysPlugin->ShowSettingsDialog(Parent);
+			// FindWindow doesn't work anymore with 10.4+
+			//Parent = FindWindow("iTunes", NULL);
+			//HWND Parent;
+			//Parent = NULL;
+			//globalHotkeysPlugin->ShowSettingsDialog(Parent);
 			break;
 
 		/*
@@ -149,14 +146,16 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 		*/
 		case kVisualPluginActivateMessage:
 			// note: do not draw here if you can avoid it, a draw message will be sent as soon as possible
-			visualPluginData->view = messageInfo->u.activateMessage.view;
+			visualPluginData.view = messageInfo->u.activateMessage.view;
+			globalHotkeysPlugin->ShowSettingsDialog(visualPluginData.view);
 			break;
 
 		/*
 			Sent when iTunes is no longer displayed.
 		*/
 		case kVisualPluginDeactivateMessage:
-			visualPluginData->view = NULL;
+			visualPluginData.view = NULL;
+			globalHotkeysPlugin->DestroySettingsDialog();
 			break;
 
 		/*
@@ -191,7 +190,7 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 			is set up properly.
 		*/
 		case kVisualPluginDrawMessage:
-			DrawVisual(visualPluginData->view);
+			DrawVisual(visualPluginData.view);
 			break;
 
 		/*
@@ -236,12 +235,12 @@ static OSStatus VisualPluginHandler(OSType message, VisualPluginMessageInfo* mes
 
 static OSStatus RegisterVisualPlugin(PluginMessageInfo* messageInfo)
 {
-	PlayerMessageInfo playerMessageInfo = { 0 };
+	PlayerMessageInfo playerMessageInfo = {};
 
 	// copy in name length byte first
-	playerMessageInfo.u.registerVisualPluginMessage.name[0] = wcslen(kTVisualPluginName);
+	playerMessageInfo.u.registerVisualPluginMessage.name[0] = UniChar(wcslen(kTVisualPluginName));
 	// now copy in actual name
-	wcscpy((wchar_t*)&playerMessageInfo.u.registerVisualPluginMessage.name[1], kTVisualPluginName);
+	wcscpy_s((wchar_t*)&playerMessageInfo.u.registerVisualPluginMessage.name[1], std::extent<decltype(playerMessageInfo.u.registerVisualPluginMessage.name)>::value - 1, kTVisualPluginName);
 
 	SetNumVersion(&playerMessageInfo.u.registerVisualPluginMessage.pluginVersion, kTVisualPluginMajorVersion, kTVisualPluginMinorVersion, kTVisualPluginReleaseStage, kTVisualPluginNonFinalRelease);
 
@@ -275,10 +274,8 @@ extern "C" __declspec(dllexport) OSStatus iTunesPluginMain(OSType message, Plugi
 			// Register one or more plugins here
 			status = RegisterVisualPlugin(messageInfo);
 			break;
-
 		case kPluginCleanupMessage:
 			break;
-
 		default:
 			status = unimpErr;
 			break;

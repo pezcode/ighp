@@ -14,7 +14,7 @@ filters   | An additional project file used by Visual Studio 2010 and above
 vcp       | A project file used by eMbedded Visual C++
 vcw       | A project file used by eMbedded Visual C++
 dev       | A project file used by Dev-C++
-cpp       | A C++ source file 
+cpp       | A C++ source file
 h         | A C++ header file
 rc        | A C++ resource script file
 jpg       | A jpeg resource file
@@ -23,7 +23,9 @@ bmp       | A bitmap resource file
 cur       | A cursor resource file
 manifest  | A manifest resource file
 txt       | A text file
-xml       | An Extensible Markup Language file (defines the ribbon UI) 
+xml       | An Extensible Markup Language file (defines the ribbon UI)
+hlsl      | Holds High Level Shading Language (HLSL), for DirectX
+fx        | An effect file, for DirectX
 
 Supported Compilers and Integrated Development Environments (IDEs)
 ==================================================================
@@ -32,6 +34,7 @@ Win32++ supports the following:
 * CodeBlocks
 * Dev-C++
 * MinGW GCC Compiler
+* MinGW GCC x64 Compiler
 * Visual Studio 6
 * Visual Studio.net 2003
 * Visual C++ Toolkit 2003
@@ -45,8 +48,15 @@ Win32++ supports the following:
 * Visual Studio.net 2012 Express
 * Visual Studio.net 2013
 * Visual Studio.net 2013 Express
+* Visual Studio.net 2013 Community
+* Visual Studio.net 2015
+* Visual Studio.net 2015 Community
+* Visual Studio.net 2017
+* Visual Studio.net 2017 Community
+* Visual Studio.net 2019
+* Visual Studio.net 2019 Community
 
-CodeBlocks is an IDE. The project files are configured for the following 
+CodeBlocks is an IDE. The project files are configured for the following
 compilers:
 * Borland Compiler Version 5.5
 * MinGW GNU compiler
@@ -72,29 +82,34 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows 8 x 64
 * Windows 8.1
 * Windows 8.1 x 64
+* Windows 10
+* Windows 10 x 64
 * Windows Server 2003
 * Windows Server 2003 x64
 * Windows Server 2008
 * Windows Server 2008 x64
 * Windows Server 2012
+* Windows Server 2016
+* Windows Server 2019
 * Windows CE
 
-Note: Programs compiled with Visual Studio.net 2008 and Visual Studio.net 2008 
+Note: Programs compiled with Visual Studio.net 2008 and Visual Studio.net 2008
 Express will not run on Win32 operating systems earlier than Windows 2000.
 
 Win32++ is Unicode compliant and can therefore be used to develop Unicode
-applications. Users are advised that older operating systems (namely Win95, 
-Win98 and WinME) don't support Unicode applications.
+applications. Users are advised that older operating systems (namely Win95,
+Win98 and WinME) will require code to be compiled as ANSI, as they
+don't support Unicode applications.
 
 Win32++ supports 64bit compilers, and can be used to develop 64bit code.
 
 Directory Structure
 ===================
-When extracting the files from the zip archive, be sure to preserve the 
+When extracting the files from the zip archive, be sure to preserve the
 directory structure. The directory structure will typically look like this:
 
+.\help
 .\include
-.\new projects
 .\output
 .\samples
 .\tools
@@ -102,123 +117,9 @@ directory structure. The directory structure will typically look like this:
 .\WCE samples
 
 The files which form the Win32++ library are contained in the include
-subdirectory. 
+folder.
 
-Components of Win32++
-=====================
-
- Files            |  Classes         | Operating Systems | Description
-==================+==================+===================+=====================
-controls.h        | CAnimation       | Win32, Win64      | Adds support for the
-                  | CComboBox        | and WinCE         | following controls:
-				  |	CComboBoxEx      |                   | Animation, ComboBox,
-				  | CDateTime        |                   | ComboBoxEx, 
-                  | CIPAddress       |                   | DateTime, IPAddress, 
-				  |	CProgressBar     |                   | ProgressBar,
-				  | CScrollBar       |                   | Scroll bar, Slider
-				  |	CSlider          |                   | Spin button,
-				  |	CSpinButton      |                   | and ToolTip.
-				  |	CToolTip         |                   | 		  
-------------------+------------------+-------------------+---------------------				  
-cstring.h         | CString          | Win32, Win64      | Adds support for
-                  |                  | and WinCE         | text strings.
-------------------+------------------+-------------------+---------------------				  
-dialog.h          | CDialog          | Win32, Win64      | Adds dialog support.
-                  | CResizer         | WinCE for CDialog |				  
-------------------+------------------+-------------------+---------------------
-docking.h         | CDocker          | Win32, Win64      | Adds support for
-                  | CDockContainer   |                   | docking windows and
-                  |                  |                   | splitter windows. 
-------------------+------------------+-------------------+---------------------
-file.h            | CFile            | Win32, Win64      | Adds support disk
-                  |                  | and WinCE         | input and output				  
-------------------+------------------+-------------------+---------------------                   
-frame.h           | CMenuMetrics     | Win32, Win64      | Adds support for
-                  | CFrame           |                   | frames. Frames use a
-                  |                  |                   | toolbar and menubar
-                  |                  |                   | inside a rebar, and 
-                  |                  |                   | a statusbar.  
-------------------+------------------+-------------------+---------------------
-gdi.h             | CDC              | Win32, Win64      | A helper class for 
-                  | CBitmap   	     | and WinCE         | GDI graphics.
-                  | CBrush           |                   |
-                  | CFont            |                   |
-                  | CPalette         |                   |
-                  | CPen             |                   |
-                  | CRgn		     |                   |
-------------------+------------------+-------------------+---------------------
-imagelist.h       | CImageList       | Win32, Win64      | A helper class for
-                  |                  | and WinCE         | image lists.
-------------------+------------------+-------------------+---------------------
-listView.h        | CListView        | Win32, Win64      | Adds support for a
-                  |                  | and WinCE         | ListView control.                  
-------------------+------------------+-------------------+---------------------  
-mdi.h             | CMDIFrame        | Win32, Win64      | Adds support for MDI
-                  | CMDIChild        |                   | frames.                  
-------------------+------------------+-------------------+---------------------
-menu.h            | CMenu            | Win32, Win64      | A helper class for
-                  |                  |                   | menus.           
-------------------+------------------+-------------------+---------------------
-menubar.h         | CMenuBar         | Win32, Win64      | Provides a menu for
-                  |                  |                   | use in a rebar.           
-------------------+------------------+-------------------+---------------------
-propertysheet.h   | CPropertySheet   | Win32, Win64      | Adds property sheet
-                  | CPropertyPage    | and WinCE         | support.
-------------------+------------------+-------------------+---------------------
-rebar.h           | CRebar           | Win32, Win64      | Adds support for a 
-                  |                  | and WinCE         | Rebar control.                  
-------------------+------------------+-------------------+---------------------
-ribbon.h          | CRibbon          | Win32, Win64      | Adds support for the 
-                  | CRibbonFrame     |                   | Windows 7 ribbon.     
-------------------+------------------+-------------------+---------------------
-rich_edit.h       | CRichEdit        | Win32, Win64      | Adds support Rich  
-                  |                  |                   | Edit control.     				  
-------------------+------------------+-------------------+---------------------
-shared_ptr.h      | Shared_Ptr       | Win32, Win64,     | Add a smart pointer
-                  |                  | and WinCE         | for use in vectors.
-------------------+------------------+-------------------+---------------------
-socket.h          | CSocket          | Win32, Win64      | Adds network  
-                  |                  | and WinCE         | support.
-------------------+------------------+-------------------+---------------------
-statusbar.h       | CStatusbar       | Win32, Win64      | Adds support for a
-                  |                  | and WinCE         | Status bar control.
-------------------+------------------+-------------------+---------------------
-stdcontrols.h     | CButton          | Win32, Win64      | Adds support for
-                  | CEdit            | and WinCE         | Button, Edit, 
-                  | CListBox         |                   | ListBox and Static    
-                  | CStatic          |                   | controls.                                       
-------------------+------------------+-------------------+---------------------
-tab.h             | CTab             | Win32, Win64      | Adds support for tab
-                  | CMDITab          |                   | controls, and MDI
-                  |                  |                   | tab windows.                   
-------------------+------------------+-------------------+---------------------
-taskdialog.h      | CTaskDialog      | Win32, Win64      | Adds support for tab
-                  |                  |                   | task dialogs.                   
-------------------+------------------+-------------------+---------------------
-toolbar.h         | CToolbar         | Win32, Win64      | Adds support for a
-                  |                  | and WinCE         | Toolbar control.
-------------------+------------------+-------------------+---------------------
-treeview.h        | CTreeView        | Win32, Win64      | Adds support for a
-                  |                  | and WinCE         | TreeView control.
-------------------+------------------+-------------------+---------------------
-wceframe.h        | CWceFrame        | WinCE only        | Adds support for
-                  | CCmdbar          |                   | frames in WinCE.
-------------------+------------------+-------------------+---------------------
-webbrowser.h      | CAXWindow        | Win32, Win64      | Adds support for an
-                  | CWebBrowser      | and WinCE         | ActiveX container 
-                  |                  |                   | and a WebBrowser.
-------------------+------------------+-------------------+---------------------
-wincore.h         | CCriticalSection | Win32, Win64,     | The core set of 
-                  | CWinApp          | and WinCE         | classes required for
-                  | CWinException    |                   | all Win32++
-				  | CWinThread       |                   | applications. 
-                  | CWnd             |                   |  
-------------------+------------------+-------------------+---------------------
-winutils.h        | CPoint           | Win32, Win64,     | Additional utility
-                  | CRect            | and WinCE         | classes.
-                  | CSize            |                   |
-				  | CA2W, CW2A etc.  |                   |
-------------------+------------------+-------------------+---------------------  
-
-Refer to the help documentation that ships with Win32++ for more information on
-using Win32++.
+Help
+====
+Refer to the documentation that ships with Win32++ in the help folder
+for more information on using Win32++.

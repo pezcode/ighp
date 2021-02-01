@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ bool PluginSettings::ReadConfig()
 	for(auto iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
 		Action::Type action_code = iter->first;
-		const char* action_name = W2A(iter->second.c_str());
+		const char* action_name = WtoA(iter->second.c_str());
 		UInt16 keys = 0;
 		UInt32 size = sizeof(keys);
 		Hotkey hotkey; // Default is empty
@@ -80,7 +80,7 @@ bool PluginSettings::WriteConfig()
 	for(auto iter = Action::names.begin(); iter != Action::names.end(); iter++)
 	{
 		Action::Type action_code = iter->first;
-		const char* action_name = W2A(iter->second.c_str());
+		const char* action_name = WtoA(iter->second.c_str());
 		// Get hotkey for that action
 		Hotkey hotkey = m_hotkeys[action_code]; // creates an empty hotkey if none exists
 		UInt16 keys = (hotkey.GetKeyCode() & 0xFF) | ((hotkey.GetModifiers() & 0xFF) << 8);

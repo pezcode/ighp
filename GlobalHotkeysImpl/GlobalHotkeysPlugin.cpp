@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 const wchar_t GlobalHotkeysPlugin::version_str[] = L"0.1.1";
 
-GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(0)
+GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog(nullptr)
 {
 	SetResourceHandle(dllHandle);
 	m_mainWindow.Create();
@@ -33,32 +33,32 @@ GlobalHotkeysPlugin::GlobalHotkeysPlugin(HINSTANCE dllHandle) : m_settingsDialog
 
 GlobalHotkeysPlugin::~GlobalHotkeysPlugin()
 {
-	if(m_settingsDialog)
-		m_settingsDialog->Destroy();
+	DestroySettingsDialog();
 	m_mainWindow.Destroy();
 }
 
 void GlobalHotkeysWnd::PreRegisterClass(WNDCLASS &wc)
 {
-	wc.style            = CS_HREDRAW|CS_VREDRAW;
-	wc.lpfnWndProc      = CWnd::StaticWindowProc;
+	// TODO everything besides class name can be removed
+	wc.style            = CS_HREDRAW | CS_VREDRAW;
 	wc.cbClsExtra       = 0;
 	wc.cbWndExtra       = 0;
 	wc.hInstance        = GetApp()->GetInstanceHandle();
 	wc.hIcon            = NULL;
-	wc.hCursor          = LoadCursor (NULL, IDC_ARROW);
-	wc.hbrBackground    = (HBRUSH)(COLOR_WINDOW+1);
+	wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground    = (HBRUSH)(COLOR_WINDOW + 1);
 	wc.lpszMenuName     = NULL;
-	wc.lpszClassName    = L"GlobalHotkeysClass";
+	wc.lpszClassName    = L"GlobalHotkeysReceiverClass";
 }
 
 void GlobalHotkeysWnd::PreCreate(CREATESTRUCT &cs)
 {
+	// TODO everything besides instance, name, style can be removed
 	cs.hInstance      = GetApp()->GetInstanceHandle();
 	cs.hMenu          = NULL;
 	cs.hwndParent     = NULL;
 	cs.lpCreateParams = NULL;
-	cs.lpszName       = L"Global Hotkeys";
+	cs.lpszName       = L"Global Hotkeys Receiver";
 	cs.style          = WS_POPUP;
 	cs.dwExStyle      = WS_EX_TRANSPARENT;
 	cs.x              = CW_USEDEFAULT;
@@ -89,9 +89,10 @@ LRESULT GlobalHotkeysWnd::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void GlobalHotkeysWnd::OnHotkey(WPARAM wParam, LPARAM lParam)
 {
 	const std::vector<Action>& hotkeys = GlobalHotkeysPlugin::Instance().m_hotkeys;
-	if(wParam >= 0 && wParam < hotkeys.size())
+	int id = int(wParam);
+	if(id >= 0 && id < hotkeys.size())
 	{
-		hotkeys[wParam].Perform();
+		hotkeys[id].Perform();
 	}
 }
 
@@ -104,17 +105,24 @@ void GlobalHotkeysPlugin::ShowSettingsDialog(HWND Parent)
 {
 	if(!m_settingsDialog)
 	{
-		m_settingsDialog = new GlobalHotkeysDialog(Parent ? CWnd::FromHandle(Parent) : CWnd().GetDesktopWindow());
+		m_settingsDialog = new GlobalHotkeysDialog(Parent ? Parent : CWnd().GetDesktopWindow());
 		m_settingsDialog->AddPage(new CSettingsPage);
 		m_settingsDialog->AddPage(new CAboutPage);
-		m_settingsDialog->DoModal();
-		m_settingsDialog = 0;
+		m_settingsDialog->Create(); // modeless
 	}
 	else
 	{
-		// If we don't have a parent window it acts like modeless,
-		// so set focus
-		m_settingsDialog->SetActiveWindow();
+		m_settingsDialog->ShowWindow(SW_SHOW);
+	}
+}
+
+void GlobalHotkeysPlugin::DestroySettingsDialog()
+{
+	if(m_settingsDialog)
+	{
+		m_settingsDialog->SendMessage(WM_CLOSE);
+		delete m_settingsDialog;
+		m_settingsDialog = nullptr;
 	}
 }
 
@@ -137,7 +145,7 @@ bool GlobalHotkeysPlugin::RegisterHotkeys(const std::map<Action::Type, Hotkey>& 
 				bMod |= MOD_SHIFT;
 			if(hotkey.GetModifiers() & HOTKEYF_ALT)
 				bMod |= MOD_ALT;
-			RegisterHotKey(m_mainWindow.GetHwnd(), m_hotkeys.size(), bMod, hotkey.GetKeyCode());
+			RegisterHotKey(m_mainWindow.GetHwnd(), int(m_hotkeys.size()), bMod, hotkey.GetKeyCode());
 			m_hotkeys.push_back(Action(action));
 		}
 	}
@@ -148,7 +156,7 @@ bool GlobalHotkeysPlugin::UnregisterHotkeys()
 {
 	for(size_t i = 0; i < m_hotkeys.size(); i++)
 	{
-		UnregisterHotKey(m_mainWindow.GetHwnd(), i);
+		UnregisterHotKey(m_mainWindow.GetHwnd(), int(i));
 	}
 	m_hotkeys.clear();
 	return true;

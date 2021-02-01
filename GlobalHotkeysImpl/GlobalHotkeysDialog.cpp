@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Stefan Cosma <stefan.cosma@gmail.com>
- * Copyright (c) 2015 pezcode <mail@rvrs.in>
+ * Copyright (c) 2021 pezcode <mail@rvrs.in>
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,140 +26,18 @@
 #include "PluginSettings.h"
 
 #include <shellapi.h>
+#include <type_traits>
 
 const wchar_t CAboutPage::URL[] = L"http://pezcode.github.com/ighp/";
-
-void CHotkey::PreCreate(CREATESTRUCT &cs)
-{
-	cs.hInstance      = GetApp()->GetInstanceHandle();
-	cs.hMenu          = NULL;
-	cs.hwndParent     = NULL;
-	cs.lpCreateParams = NULL;
-	cs.lpszName       = L"";
-	cs.lpszClass      = HOTKEY_CLASS;
-	cs.style          = WS_CHILD | WS_VISIBLE;
-	cs.dwExStyle      = NULL;
-	cs.x              = CW_USEDEFAULT;
-	cs.y              = CW_USEDEFAULT;
-	cs.cx             = CW_USEDEFAULT;
-	cs.cy             = CW_USEDEFAULT;
-}
-
-LRESULT CHotkey::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch(uMsg)
-	{
-	case WM_GETDLGCODE:
-		return DLGC_WANTALLKEYS;
-	}
-
-	return WndProcDefault(uMsg, wParam, lParam);
-}
-
-void GlobalHotkeysDialog::OnInitialUpdate()
-{
-	CenterWindow();
-}
-
-void CAboutPage::MakeItalic(CWnd* Window, bool italic)
-{
-	CFont* font = Window->GetFont();
-	LOGFONT lf = font->GetLogFont();
-	lf.lfItalic = italic ? TRUE : FALSE;
-	lf.lfOutPrecision =  italic ? OUT_TT_ONLY_PRECIS : lf.lfOutPrecision;
-	lf.lfQuality = italic ? PROOF_QUALITY : lf.lfQuality;
-	CFont fontNew(&lf);
-	Window->SetFont(&fontNew, false);
-}
-
-BOOL CAboutPage::OnInitDialog()
-{
-	m_Title.AttachDlgItem(IDC_TITLE, this);
-	m_Version.AttachDlgItem(IDC_VERSION, this);
-	m_URL.AttachDlgItem(IDC_URL, this);
-
-	m_Version.SetWindowText(GlobalHotkeysPlugin::version_str);
-
-	//MakeBold(&m_Title, true);
-	//Resize(&m_Title, 3);
-
-	InitURLControl();
-
-	return TRUE;
-}
-
-LRESULT CAboutPage::OnNotify(WPARAM wParam, LPARAM lParam)
-{
-	switch(LPNMHDR(lParam)->idFrom)
-	{
-	case IDC_URL:
-		switch(LPNMHDR(lParam)->code)
-		{
-		case NM_CLICK:  // mouse
-		case NM_RETURN: // keyboard
-			OnURL(PNMLINK(lParam));
-			return TRUE;
-		}
-		break;
-	}
-
-	return CPropertyPage::OnNotify(wParam, lParam);
-}
-
-void CAboutPage::OnURL(const NMLINK* lpClick)
-{
-	LITEM item = lpClick->item;
-	if(item.iLink == 0)
-	{
-		ShellExecuteW(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
-	}
-}
-
-void CAboutPage::InitURLControl()
-{
-	// Set the text first so the SysLink controls which URL is which iLink
-	std::wstring title = std::wstring(L"<a>") + URL + L"</a>";
-	m_URL.SetWindowText(title.c_str());
-
-	LITEM item;
-	item.mask = LIF_ITEMINDEX | LIF_URL;
-	item.iLink = 0;
-	wcscpy(item.szUrl, URL);
-	m_URL.SendMessage(LM_SETITEM, NULL, (LPARAM)&item);
-}
-
-void CAboutPage::MakeBold(CWnd* Window, bool bold)
-{
-	CFont* font = Window->GetFont();
-	LOGFONT lf = font->GetLogFont();
-	lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
-	CFont fontNew(&lf);
-	Window->SetFont(&fontNew, false);
-}
-
-void CAboutPage::Resize(CWnd* Window, int delta)
-{
-	CFont* font = Window->GetFont();
-	LOGFONT lf = font->GetLogFont();
-	if(lf.lfHeight)
-	{
-		if(lf.lfHeight < 0)
-			lf.lfHeight -= delta;
-		else
-			lf.lfHeight += delta;
-	}
-	CFont fontNew(&lf);
-	Window->SetFont(&fontNew, false);
-}
 
 BOOL CSettingsPage::OnInitDialog()
 {
 	Action::InitNames();
 
-	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, this);
-	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, this);
+	m_hotkeysListView.AttachDlgItem(IDC_HOTKEYS_LIST, *this);
+	m_hotkeyInput.AttachDlgItem(IDC_HOTKEY_CONTROL, *this);
 
-	//Get a temporary copy
+	// Get a temporary copy
 	m_hotkeys = PluginSettings::Instance().GetHotkeys();
 	// Temporarily disable hotkeys
 	GlobalHotkeysPlugin::Instance().UnregisterHotkeys();
@@ -173,7 +51,6 @@ BOOL CSettingsPage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	switch(LOWORD(wParam))
     {
-		return TRUE;
 	case IDC_SET:
 		OnSet();
 		return TRUE;
@@ -182,8 +59,7 @@ BOOL CSettingsPage::OnCommand(WPARAM wParam, LPARAM lParam)
 		return TRUE;
     }
 	
-	return FALSE;
-	//return CPropertyPage::OnCommand(wParam, lParam);
+	return CPropertyPage::OnCommand(wParam, lParam);
 }
 
 LRESULT CSettingsPage::OnNotify(WPARAM wParam, LPARAM lParam)
@@ -203,29 +79,27 @@ LRESULT CSettingsPage::OnNotify(WPARAM wParam, LPARAM lParam)
 	return CPropertyPage::OnNotify(wParam, lParam);
 }
 
-int CSettingsPage::OnOK()
-{
-	OnApply();
-	// Enable hotkeys again
-	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
-
-	return PSNRET_NOERROR;
-}
-
-void CSettingsPage::OnCancel()
-{
-	// Enable hotkeys again
-	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
-}
-
-int CSettingsPage::OnApply()
+BOOL CSettingsPage::OnApply()
 {
 	// save new hotkeys
 	PluginSettings::Instance().SetHotkeys(m_hotkeys);
 	PluginSettings::Instance().WriteConfig();
-
-	return PSNRET_NOERROR;
+	return TRUE;
 }
+
+void CSettingsPage::OnClose()
+{
+	// Enable hotkeys again
+	GlobalHotkeysPlugin::Instance().RegisterHotkeys(PluginSettings::Instance().GetHotkeys());
+	CPropertyPage::OnClose();
+}
+
+/*
+void CSettingsPage::OnDestroy()
+{
+	
+}
+*/
 
 void CSettingsPage::OnSet()
 {
@@ -235,7 +109,7 @@ void CSettingsPage::OnSet()
 
 	Action::Type action = Action::Type(index + 1);
 
-	WORD wKeys = m_hotkeyInput.GetHotKey();
+	WORD wKeys = LOWORD(m_hotkeyInput.GetHotKey());
 	BYTE bKeyCode = LOBYTE(wKeys);
 	BYTE bModifiers = HIBYTE(wKeys);
 	Hotkey hotkey(bKeyCode, bModifiers);
@@ -243,7 +117,7 @@ void CSettingsPage::OnSet()
 	m_hotkeysListView.SetItemText(index, 1, hotkey.toString().c_str());
 	m_hotkeys[action] = hotkey;
 
-	PropSheet_Changed(GetParent()->GetHwnd(), m_hWnd);
+	SetModified(TRUE);
 }
 
 void CSettingsPage::OnClear()
@@ -253,12 +127,12 @@ void CSettingsPage::OnClear()
 		return;
 
 	Action::Type action = Action::Type(index + 1);
-	m_hotkeys[action] = Hotkey(); // set empty
+	m_hotkeys[action] = Hotkey();
 
-	m_hotkeyInput.SetHotKey(0, 0);
+	m_hotkeyInput.SetHotKey(0);
 	m_hotkeysListView.SetItemText(index, 1, L"");
 
-	PropSheet_Changed(GetParent()->GetHwnd(), m_hWnd);
+	SetModified(TRUE);
 }
 
 void CSettingsPage::InitHotkeysListView()
@@ -285,7 +159,7 @@ void CSettingsPage::PopulateHotkeysList()
 
 	// Update column widths after filling the listview (account for possible scrollbar)
 	m_hotkeysListView.SetColumnWidth(0, LVSCW_AUTOSIZE);
-	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER);
+	m_hotkeysListView.SetColumnWidth(1, LVSCW_AUTOSIZE_USEHEADER); // use remaining space
 }
 
 void CSettingsPage::OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange)
@@ -296,9 +170,102 @@ void CSettingsPage::OnSelectedListItemChanged(const NMLISTVIEW* lpStateChange)
 	Action::Type action = Action::Type(lpStateChange->iItem + 1);
 	Hotkey hotkey = m_hotkeys[action];
 
-	m_hotkeyInput.SetHotKey(hotkey.GetKeyCode(), hotkey.GetModifiers());
+	m_hotkeyInput.SetHotKey(MAKEWORD(hotkey.GetKeyCode(), hotkey.GetModifiers()));
 
 	// Set focus to hotkey control
 	// Only works while the mouse button is down, then goes back to the listview
 	//this->PostMessage(WM_NEXTDLGCTL, (WPARAM)m_hotkeyInput.GetHwnd(), TRUE);
+}
+
+void CAboutPage::MakeItalic(CWnd* Window, bool italic)
+{
+	LOGFONT lf = Window->GetFont().GetLogFont();
+	lf.lfItalic = italic ? TRUE : FALSE;
+	lf.lfOutPrecision = italic ? OUT_TT_ONLY_PRECIS : lf.lfOutPrecision;
+	lf.lfQuality = italic ? PROOF_QUALITY : lf.lfQuality;
+	CFont fontNew(lf);
+	Window->SetFont(fontNew, false);
+}
+
+BOOL CAboutPage::OnInitDialog()
+{
+	m_Title.AttachDlgItem(IDC_TITLE, *this);
+	m_Version.AttachDlgItem(IDC_VERSION, *this);
+	m_URL.AttachDlgItem(IDC_URL, *this);
+
+	m_Version.SetWindowText(GlobalHotkeysPlugin::version_str);
+
+	//MakeBold(&m_Title, true);
+	//Resize(&m_Title, 3);
+
+	//InitURLControl();
+
+	return TRUE;
+}
+
+LRESULT CAboutPage::OnNotify(WPARAM wParam, LPARAM lParam)
+{
+	switch(LPNMHDR(lParam)->idFrom)
+	{
+	case IDC_URL:
+		switch(LPNMHDR(lParam)->code)
+		{
+		case NM_CLICK:  // mouse
+		case NM_RETURN: // keyboard
+			OnURL(PNMLINK(lParam));
+			return TRUE;
+		}
+		break;
+	}
+
+	return CPropertyPage::OnNotify(wParam, lParam);
+}
+
+void CAboutPage::OnURL(const NMLINK* lpClick)
+{
+	const LITEM& item = lpClick->item;
+	if(item.iLink == 0)
+	{
+		ShellExecuteW(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
+	}
+}
+
+void CAboutPage::InitURLControl()
+{
+	// Set the text first so the SysLink controls which URL is which iLink
+	std::wstring title = std::wstring(L"<a>") + URL + L"</a>";
+	m_URL.SetWindowText(title.c_str());
+
+	LITEM item = {};
+	item.mask = LIF_ITEMINDEX | LIF_URL;
+	item.iLink = 0;
+	wcscpy_s(item.szUrl, std::extent<decltype(item.szUrl)>::value, URL);
+	m_URL.SendMessage(LM_SETITEM, NULL, (LPARAM)&item);
+}
+
+void CAboutPage::MakeBold(CWnd* Window, bool bold)
+{
+	LOGFONT lf = Window->GetFont().GetLogFont();
+	lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
+	CFont fontNew(lf);
+	Window->SetFont(fontNew, false);
+}
+
+void CAboutPage::Resize(CWnd* Window, int delta)
+{
+	LOGFONT lf = Window->GetFont().GetLogFont();
+	if(lf.lfHeight)
+	{
+		if(lf.lfHeight < 0)
+			lf.lfHeight -= delta;
+		else
+			lf.lfHeight += delta;
+	}
+	CFont fontNew(lf);
+	Window->SetFont(fontNew, false);
+}
+
+void GlobalHotkeysDialog::OnInitialUpdate()
+{
+	CenterWindow();
 }

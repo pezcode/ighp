@@ -1,3 +1,5 @@
+Unicode true
+
 ;======================================================
 ; Include
 
@@ -6,24 +8,19 @@
 !include x64.nsh
 
 ;======================================================
-;Version Information
-
-!define UNINST_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp"
+; Defines
 
 !define APP_NAME "iTunes Global Hotkeys Plugin"
 !define VERSION "0.1.1"
 ;!define IS64BIT
 
-VIProductVersion "${VERSION}.0"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${APP_NAME}"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (c) 2015 Stefan Cosma, pezcode"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${APP_NAME} Setup"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}.0"
+!define UNINST_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\ighp"
 
 ;======================================================
 ; Installer Information
 
 Name "${APP_NAME}"
+
 !ifdef IS64BIT
   OutFile "ighp_${VERSION}_x64.exe"
   InstallDir "$PROGRAMFILES64\iTunes\Plug-ins"
@@ -34,6 +31,7 @@ Name "${APP_NAME}"
 
 ;======================================================
 ; Request application privileges for Windows Vista
+
 RequestExecutionLevel admin
 
 ;======================================================
@@ -58,7 +56,17 @@ RequestExecutionLevel admin
 ;======================================================
 ; Languages
 
+; this has to be done before using LANG_ENGLISH but after inserting the MUI pages
 !insertmacro MUI_LANGUAGE "English"
+
+;======================================================
+;Version Information
+
+VIProductVersion "${VERSION}.0"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${APP_NAME}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (c) 2021 Stefan Cosma, pezcode"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${APP_NAME} Setup"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}.0"
 
 ;======================================================
 ; Sections
@@ -116,9 +124,9 @@ Section "Plugin"
   SetOutPath $INSTDIR
 
   !ifdef IS64BIT
-    File "x64\release\GlobalHotkeys.dll"
+    File "x64\Release\GlobalHotkeys.dll"
   !else
-    File "release\GlobalHotkeys.dll"
+    File "Release\GlobalHotkeys.dll"
   !endif
   File "/oname=Global Hotkeys License.txt" "License.txt"
   File "/oname=Global Hotkeys Readme.txt" "Readme.txt"
